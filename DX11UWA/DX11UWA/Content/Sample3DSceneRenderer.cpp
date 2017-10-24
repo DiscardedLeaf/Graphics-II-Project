@@ -53,6 +53,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
 
 	XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
 
 	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
 	static const XMVECTORF32 eye = { 0.0f, 0.7f, -1.5f, 0.0f };
@@ -61,6 +63,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 
 	XMStoreFloat4x4(&m_camera, XMMatrixInverse(nullptr, XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -78,7 +82,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 
 	// Update or move camera here
-	UpdateCamera(timer, 2.0f, 0.25f);
+	UpdateCamera(timer, 6.0f, 0.25f);
 
 }
 
@@ -217,7 +221,6 @@ void Sample3DSceneRenderer::Render(void)
 
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 
-
 	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0, 0);
 	// Each vertex is one instance of the VertexPositionColor struct.
@@ -236,6 +239,24 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 	// Draw the objects.
 	context->DrawIndexed(m_indexCount, 0, 0);
+
+	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	//Set constant buffer's world matrix to plane's world matrix
+	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &g_constantBufferData, 0, 0, 0);
+
+	//set vertex buffer to plane
+	context->IASetVertexBuffers(0, 1, g_vertexBuffer.GetAddressOf(), &stride, &offset);
+	//set index buffer to plane
+	context->IASetIndexBuffer(g_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->IASetInputLayout(m_inputLayout.Get());
+
+	context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers1(0, 1, m_constantBuffer.GetAddressOf(), nullptr, nullptr);
+
+	context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+	
+	context->DrawIndexed(g_indexCount, 0, 0);
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
@@ -326,8 +347,43 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer));
 	});
 
+	auto createGridTask = createCubeTask.then([this]()
+	{
+		static VertexPositionColor gridVertices[] = 
+		{
+			{XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+			{XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+			{XMFLOAT3( 1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+			{XMFLOAT3( 1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)}
+		};
+
+		D3D11_SUBRESOURCE_DATA vertexData;
+		ZeroMemory(&vertexData, sizeof(vertexData));
+		vertexData.pSysMem = gridVertices;
+		CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(gridVertices), D3D11_BIND_VERTEX_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &g_vertexBuffer));
+
+		static const unsigned short gridIndices[] =
+		{
+			0,1,2, //triangle 1 back and front
+			2,1,0,
+
+			0,2,3, //triangle 2 back and front
+			3,2,0
+		};
+
+		g_indexCount = ARRAYSIZE(gridIndices);
+		D3D11_SUBRESOURCE_DATA indexData;
+		ZeroMemory(&indexData, sizeof(indexData));
+		indexData.pSysMem = gridIndices;
+		CD3D11_BUFFER_DESC indexBufferDesc(sizeof(gridIndices), D3D11_BIND_INDEX_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &g_indexBuffer));
+
+		XMStoreFloat4x4(&g_constantBufferData.model, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(2, 1, 2))));
+	});
+
 	// Once the cube is loaded, the object is ready to be rendered.
-	createCubeTask.then([this]()
+	createGridTask.then([this]()
 	{
 		m_loadingComplete = true;
 	});

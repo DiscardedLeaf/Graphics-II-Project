@@ -44,9 +44,22 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;
 
+
+		//Direct3D resources for lower plane
+		//Microsoft::WRL::ComPtr<ID3D11InputLayout>   g_inputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>        g_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		g_indexBuffer;
+		/*Microsoft::WRL::ComPtr<ID3D11VertexShader>  g_vertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	g_PixelShader;*/
+
+
 		// System resources for cube geometry.
 		ModelViewProjectionConstantBuffer	m_constantBufferData;
 		uint32	m_indexCount;
+
+		//System resources for lower plane
+		ModelViewProjectionConstantBuffer	g_constantBufferData;
+		uint32  g_indexCount;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;
