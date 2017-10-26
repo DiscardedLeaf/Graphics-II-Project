@@ -38,8 +38,8 @@ namespace DX11UWA
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
 		//Direct3D input layouts
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>   n_inputLayout; //position, uv's and normals
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_inputLayout; //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>   n_inputLayout; //position, uv's and normals
 
 		//Direct3D vertex shaders
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_vertexShader; //position and uv's
