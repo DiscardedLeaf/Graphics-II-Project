@@ -352,7 +352,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer));
 	});
 
-	auto createGridTask = createCubeTask.then([this]()
+	auto createGridTask = (createPSTask && createVSTask).then([this]()
 	{
 		static VertexPositionColor gridVertices[] = 
 		{
@@ -387,8 +387,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		XMStoreFloat4x4(&g_constantBufferData.model, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(2, 1, 2))));
 	});
 
-	// Once the cube is loaded, the object is ready to be rendered.
-	createGridTask.then([this]()
+	// Once the objects are loaded, the objects are ready to be rendered.
+	(createCubeTask && createGridTask).then([this]()
 	{
 		m_loadingComplete = true;
 	});

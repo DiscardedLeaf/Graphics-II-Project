@@ -16,7 +16,7 @@ struct PixelShaderInput
 {
 	float4 pos : SV_POSITION;
 	float3 uv : UV;
-	float3 norm : NORMAL
+	float3 norm : NORMAL;
 };
 
 PixelShaderInput main( VertexShaderInput input )
