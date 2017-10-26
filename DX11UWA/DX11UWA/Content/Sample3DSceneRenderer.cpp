@@ -25,6 +25,11 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	CreateWindowSizeDependentResources();
 }
 
+void Sample3DSceneRenderer::LoadObjFile(Microsoft::WRL::ComPtr<ID3D11Buffer>& vertexBuffer, Microsoft::WRL::ComPtr<ID3D11Buffer>& indexBuffer, ModelViewProjectionConstantBuffer & constantBufferData, uint32 & indexCount)
+{
+
+}
+
 // Initializes view parameters when the window size changes.
 void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 {
