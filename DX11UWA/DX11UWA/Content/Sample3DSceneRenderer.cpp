@@ -421,9 +421,14 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 {
 	m_loadingComplete = false;
 	m_vertexShader.Reset();
+	n_vertexShader.Reset();
 	m_inputLayout.Reset();
+	n_inputLayout.Reset();
 	m_pixelShader.Reset();
+	nDir_pixelShader.Reset();
 	m_constantBuffer.Reset();
 	m_vertexBuffer.Reset();
+	g_vertexBuffer.Reset();
 	m_indexBuffer.Reset();
+	g_indexBuffer.Reset();
 }
