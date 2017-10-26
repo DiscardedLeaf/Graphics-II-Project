@@ -12,7 +12,7 @@ namespace DX11UWA
 	{
 	public:
 		Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-		void LoadObjFile(Microsoft::WRL::ComPtr<ID3D11Buffer>& vertexBuffer, Microsoft::WRL::ComPtr<ID3D11Buffer>& indexBuffer, ModelViewProjectionConstantBuffer& constantBufferData, uint32& indexCount);
+		void LoadObjFile(const char * path, Microsoft::WRL::ComPtr<ID3D11Buffer>& vertexBuffer, Microsoft::WRL::ComPtr<ID3D11Buffer>& indexBuffer, uint32& indexCount);
 		void CreateDeviceDependentResources(void);
 		void CreateWindowSizeDependentResources(void);
 		void ReleaseDeviceDependentResources(void);

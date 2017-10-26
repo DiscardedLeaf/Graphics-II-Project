@@ -1,10 +1,10 @@
 ﻿#include "pch.h"
 #include "Sample3DSceneRenderer.h"
-
+#include <fstream>
 #include "..\Common\DirectXHelper.h"
 
 using namespace DX11UWA;
-
+using namespace std;
 using namespace DirectX;
 using namespace Windows::Foundation;
 
@@ -25,8 +25,109 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	CreateWindowSizeDependentResources();
 }
 
-void Sample3DSceneRenderer::LoadObjFile(Microsoft::WRL::ComPtr<ID3D11Buffer>& vertexBuffer, Microsoft::WRL::ComPtr<ID3D11Buffer>& indexBuffer, ModelViewProjectionConstantBuffer & constantBufferData, uint32 & indexCount)
+void Sample3DSceneRenderer::LoadObjFile(const char * path,
+										Microsoft::WRL::ComPtr<ID3D11Buffer>& vertexBuffer,
+										Microsoft::WRL::ComPtr<ID3D11Buffer>& indexBuffer,
+										uint32 & indexCount)
 {
+	vector<XMFLOAT3> positions;
+	vector<XMFLOAT3> uvs;
+	vector<XMFLOAT3> normals;
+	vector<int> vertexIndices, uvIndices, normalIndices;
+	char buffer[51];
+
+	ifstream load;
+	load.open(path, ifstream::in);
+
+	while (!load.eof())
+	{
+		load.getline(buffer, 2);
+		if (strcmp(buffer, "v ") == 0)
+		{
+			XMFLOAT3 vertex;
+			load.getline(buffer, 50, ' ');
+			vertex.x = atof(buffer);
+			load.getline(buffer, 50, ' ');
+			vertex.y = atof(buffer);
+			load.getline(buffer, 50);
+			vertex.z = atof(buffer);
+			positions.push_back(vertex);
+		}
+		else if (strcmp(buffer, "vt") == 0)
+		{
+			XMFLOAT3 uv;
+			load.getline(buffer, 1);
+			load.getline(buffer, 50, ' ');
+			uv.x = atof(buffer);
+			load.getline(buffer, 50);
+			uv.y = atof(buffer);
+			uv.z = 0.0f;
+			uvs.push_back(uv);
+		}
+		else if (strcmp(buffer, "vn") == 0)
+		{
+			XMFLOAT3 normal;
+			load.getline(buffer, 1);
+			load.getline(buffer, 50, ' ');
+			normal.x = atof(buffer);
+			load.getline(buffer, 50, ' ');
+			normal.y = atof(buffer);
+			load.getline(buffer, 50);
+			normal.z = atof(buffer);
+			normals.push_back(normal);
+		}
+		else if (strcmp(buffer, "f ") == 0)
+		{
+			load.getline(buffer, 50, '/');
+			vertexIndices.push_back(atoi(buffer) - 1);
+			load.getline(buffer, 50, '/');
+			uvIndices.push_back(atoi(buffer) - 1);
+			load.getline(buffer, 50, '/');
+			normalIndices.push_back(atoi(buffer) - 1);
+			indexCount++;
+		}
+	}
+
+	load.close();
+	vector<VertexPositionUVNormal> objVertices;
+	vector<unsigned short> objIndices;
+	bool unique;
+	for (int i = 0; i < indexCount; ++i)
+	{
+		unique = true;
+		VertexPositionUVNormal vert;
+		vert.pos = positions[vertexIndices[i]];
+		vert.normal = normals[normalIndices[i]];
+		vert.uv = uvs[uvIndices[i]];
+		for (int j = 0; j < objVertices.size(); ++j)
+		{
+			if (vert.pos.x == objVertices[j].pos.x && vert.pos.y == objVertices[j].pos.y && vert.pos.z == objVertices[j].pos.z &&
+				vert.normal.x == objVertices[j].normal.x && vert.normal.y == objVertices[j].normal.y && vert.normal.z == objVertices[j].normal.z &&
+				vert.uv.x == objVertices[j].uv.x && vert.uv.y == objVertices[j].uv.y)
+			{
+				unique = false;
+				objIndices.push_back(j);
+				break;
+			}
+		}
+		if (unique)
+		{
+			objVertices.push_back(vert);
+			objIndices.push_back(objVertices.size() - 1);
+		}
+	}
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData;
+	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
+	vertexBufferData.pSysMem = &objVertices;
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(objVertices), D3D11_BIND_VERTEX_BUFFER);
+	DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer));
+
+	D3D11_SUBRESOURCE_DATA indexBufferData;
+	ZeroMemory(&indexBufferData, sizeof(indexBufferData));
+	indexBufferData.pSysMem = &objIndices;
+	CD3D11_BUFFER_DESC indexBufferDesc(sizeof(objIndices), D3D11_BIND_INDEX_BUFFER);
+	DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
 
 }
 
