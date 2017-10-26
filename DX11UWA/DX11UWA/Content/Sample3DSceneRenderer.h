@@ -36,28 +36,30 @@ namespace DX11UWA
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
-		// Direct3D resources for cube geometry.
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_inputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_indexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_vertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader;
+		//Direct3D input layouts
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>   n_inputLayout; //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_inputLayout; //position and uv's
+
+		//Direct3D vertex shaders
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_vertexShader; //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>  n_vertexShader; //position, uv's and normals
+
+		//Direct3D pixel shaders
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader; //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>   n_pixelShader; //position, uv's and normals
+
+		//Direct3D constant buffers
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;
 
-
-		//Direct3D resources for lower plane
-		//Microsoft::WRL::ComPtr<ID3D11InputLayout>   g_inputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>        g_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		g_indexBuffer;
-		/*Microsoft::WRL::ComPtr<ID3D11VertexShader>  g_vertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>	g_PixelShader;*/
-
-
-		// System resources for cube geometry.
+		// Cube Resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_indexBuffer;
 		ModelViewProjectionConstantBuffer	m_constantBufferData;
 		uint32	m_indexCount;
 
-		//System resources for lower plane
+		//Lower Plane Resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>        g_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		g_indexBuffer;
 		ModelViewProjectionConstantBuffer	g_constantBufferData;
 		uint32  g_indexCount;
 
