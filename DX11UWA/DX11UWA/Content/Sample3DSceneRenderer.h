@@ -47,7 +47,7 @@ namespace DX11UWA
 
 		//Direct3D pixel shaders
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader; //position and uv's
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>   n_pixelShader; //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>   nDir_pixelShader; //position, uv's and normals for directional light
 
 		//Direct3D constant buffers
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;
