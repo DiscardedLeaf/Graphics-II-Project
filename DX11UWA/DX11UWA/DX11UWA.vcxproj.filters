@@ -110,6 +110,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DX11UWA_TemporaryKey.pfx" />
+    <None Include="Assets\PencassoDeath.mtl">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\SamplePixelShader.hlsl">
@@ -124,5 +127,10 @@
     <FxCompile Include="ObjDirectionalPixelShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Assets\PencassoDeath.obj">
+      <Filter>Assets</Filter>
+    </Object>
   </ItemGroup>
 </Project>

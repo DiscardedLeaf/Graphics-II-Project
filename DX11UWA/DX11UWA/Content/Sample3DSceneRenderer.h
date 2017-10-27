@@ -55,14 +55,20 @@ namespace DX11UWA
 		// Cube Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_indexBuffer;
-		ModelViewProjectionConstantBuffer	m_constantBufferData;
-		uint32	m_indexCount;
+		ModelViewProjectionConstantBuffer			m_constantBufferData;
+		uint32										m_indexCount;
 
 		//Lower Plane Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>        g_vertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		g_indexBuffer;
-		ModelViewProjectionConstantBuffer	g_constantBufferData;
-		uint32  g_indexCount;
+		ModelViewProjectionConstantBuffer			g_constantBufferData;
+		uint32										g_indexCount;
+
+		//Pencasso Resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_indexBuffer;
+		ModelViewProjectionConstantBuffer			pDeath_constantBufferData;
+		uint32										pDeath_indexCount;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;
