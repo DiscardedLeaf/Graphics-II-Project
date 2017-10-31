@@ -1,40 +1,41 @@
-cbuffer ModelViewProjectionConstantBuffer : register(b0)
+cbuffer PerObject : register(b0)
 {
-	matrix model;
+	matrix world;
 	matrix view;
 	matrix projection;
+	matrix inverseTransposeWorld;
 };
 
 struct VertexShaderInput
 {
 	float3 pos : POSITION;
-	float3 uv : UV;
+	float3 uv : TEXCOORD;
 	float3 norm : NORMAL;
 };
 
-struct PixelShaderInput
+struct VertexShaderOutput
 {
-	float4 pos : SV_POSITION;
-	float3 uv : UV;
-	float3 norm : NORMAL;
+	float4 posWS : TEXCOORD1;
+	float3 normWS : TEXCOORD2;
+	float2 uv : TEXCOORD0;
+	float4 pos : SV_Position;
 };
 
-PixelShaderInput main( VertexShaderInput input )
+VertexShaderOutput main( VertexShaderInput input )
 {
-	PixelShaderInput output;
+	VertexShaderOutput output;
+	
 	float4 pos = float4(input.pos, 1.0f);
 	float4 norm = float4(input.norm, 0.0f);
 
-	pos = mul(pos, model);
+	pos = mul(pos, world);
 	pos = mul(pos, view);
 	pos = mul(pos, projection);
-	norm = mul(norm, model);
-	norm = mul(norm, view);
-	norm = mul(norm, projection);
-
+	norm = mul(norm, world);
 	output.pos = pos;
-	output.norm = (float3)norm;
-	output.uv = input.uv;
+	output.posWS = mul( float4(input.pos, 1.0f), world);
+	output.normWS = (float3)norm;
+	output.uv = input.uv.xy;
 
 	return output;
 }
