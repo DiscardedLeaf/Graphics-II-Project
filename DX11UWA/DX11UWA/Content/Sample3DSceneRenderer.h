@@ -50,7 +50,16 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>   nDir_pixelShader; //position, uv's and normals for directional light
 
 		//Direct3D constant buffers
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;  //constant buffer for world objects
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		n_constantBuffer;  //constant buffer for normalized world objects
+		Microsoft::WRL::ComPtr<ID3D11Buffer>        t_constantBuffer;  //constant buffer for texturing
+		Microsoft::WRL::ComPtr<ID3D11Buffer>		l_constantBuffer;  //constant buffer for lighting
+
+		//Direct3D texture objects
+		Microsoft::WRL::ComPtr<ID3D11Texture2D>     p_texture; //texture object for pencasso
+
+		//Direct3D sampler objects
+		Microsoft::WRL::ComPtr<ID3D11SamplerState>  p_sampler; //sampler object for pencasso
 
 		// Cube Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
@@ -67,8 +76,12 @@ namespace DX11UWA
 		//Pencasso Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_vertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_indexBuffer;
-		ModelViewProjectionConstantBuffer			pDeath_constantBufferData;
+		PerObjectBuffer								pDeath_constantBufferData;
 		uint32										pDeath_indexCount;
+		MaterialProperties							pDeath_materialProperties;
+
+		//Light Objects
+		LightProperties								m_lighting;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;
