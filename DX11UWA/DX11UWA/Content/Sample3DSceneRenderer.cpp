@@ -196,7 +196,7 @@ void Sample3DSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
-	XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixRotationY(radians), XMMatrixMultiply(XMMatrixTranslation(0.0f, -.5f, 0.0f), XMMatrixScaling(.25f, .25f, .25f)))));
+	XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixRotationY(radians), XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f), XMMatrixScaling(.25f, .25f, .25f)))));
 	XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
 }
 
@@ -553,7 +553,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createPencassoDeathTask = (createObjVSTask && createObjDirPSTask).then([this]()
 	{
 		LoadObjFile("Assets/PencassoDeath.obj", pDeath_vertexBuffer, pDeath_indexBuffer, pDeath_indexCount);
-		XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0f, -.5f, 0.0f),XMMatrixScaling(.25f, .25f, .25f))));
+		XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f),XMMatrixScaling(.25f, .25f, .25f))));
 		XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
 		_Material deadPenguin;
 		deadPenguin.Ambient = { .25f, .25f, .25f, .25f };
