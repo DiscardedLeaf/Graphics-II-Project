@@ -595,12 +595,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		flashLight.Enabled = 1;
 		flashLight.LightType = 2;
 		flashLight.Position = { 0.0f, 3.0f, 0.0f, 1.0f };
-		flashLight.SpotAngle = 3.14159265359 * .25f;
+		flashLight.SpotAngle = PI * .25f;
 		flashLight.useQuadraticAttenuation = 1;
 		
 		//add all created lights to the list
 		m_lighting.Lights[0] = hereComesTheSun;
 		m_lighting.Lights[1] = star;
+		m_lighting.Lights[2] = flashLight;
 		m_lighting.GlobalAmbient = { 0.25f, 0.25f, 0.25f, 0.25f };
 	});
 

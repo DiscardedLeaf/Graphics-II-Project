@@ -1,5 +1,7 @@
 ﻿#pragma once
 #define MAX_LIGHTS 8
+#define PI 3.14159265359
+
 namespace DX11UWA
 {
 	//NOTE: use floats and ints for structures, other data types can screw with stuff
