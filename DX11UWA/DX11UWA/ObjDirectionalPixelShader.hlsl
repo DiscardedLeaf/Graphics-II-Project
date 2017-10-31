@@ -1,4 +1,29 @@
-struct PixelShaderInput
+#define MAX_LIGHTS 8
+
+#define DIRECTIONAL_LIGHT 0
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2
+
+Texture2D Texture : register(t0);
+sampler Sampler : register(s0);
+
+struct _Material
+{
+	float4 Emissive; //emissive light component of material
+	float4 Ambient; //ambient light component of material
+	float4 Diffuse; //diffuse light component of material
+	float4 Specular; //specular light component of material
+
+	float SpecularPower; //how bright the specular highlight is
+	bool useTexture; //whether or not to use a texture or simply the material color
+	float2 Padding; //keeps memory usage at a multiple of 16
+};
+
+cbuffer MaterialProperties : register(b0)
+{
+	_Material Material;
+}
+
 struct Light
 {
 	float4 Position; //position of the light source
