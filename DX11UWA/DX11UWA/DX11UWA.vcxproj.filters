@@ -113,6 +113,7 @@
     <None Include="Assets\PencassoDeath.mtl">
       <Filter>Assets</Filter>
     </None>
+    <None Include="Assets\PencassoDeath.obj" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\SamplePixelShader.hlsl">
@@ -127,10 +128,5 @@
     <FxCompile Include="ObjDirectionalPixelShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="Assets\PencassoDeath.obj">
-      <Filter>Assets</Filter>
-    </Object>
   </ItemGroup>
 </Project>
