@@ -66,13 +66,12 @@ float calculateAttenuation(Light light, float distance)
 	return attenuation;
 }
 
-float calculateSpotLightAttenuation(Light light, float surfaceRatio, float coneRatio)
+float calculateSpotLightAttenuation(Light light, float3 lightVector)
 {
-	float innerConeRatio = .5f * coneRatio;
-	float attenuation = 1.0f - saturate((innerConeRatio - surfaceRatio) / (innerConeRatio - coneRatio));
-	if (light.useQuadraticAttenuation == 1)
-		return attenuation * attenuation;
-	return attenuation;
+	float minCos = cos(light.SpotAngle);
+	float maxCos = (minCos + 1.0f) / 2.0f;
+	float cosAngle = dot(light.Direction.xyz, -lightVector);
+	return smoothstep(minCos, maxCos, cosAngle);
 }
 
 struct LightingResult
@@ -117,19 +116,12 @@ LightingResult calculateSpotLight(Light light, float3 viewVector, float4 Point, 
 {
 	LightingResult result;
 
-	float3 lightVector = (light.Position - Point).xyz; //find vector between lights position and point
-	float distance = length(lightVector); //find length of the vector
-	lightVector = lightVector / distance; //normalize the light vector
+	float3 lightVector = normalize((light.Position - Point).xyz); //find the normalized vector between the point and light source
 
-	float surfaceRatio = saturate(dot(-lightVector, light.Direction));
-	float coneRatio = .5f * light.SpotAngle;
-	float coneIntensity = calculateSpotLightAttenuation(light, surfaceRatio, coneRatio);
+	float coneIntensity = calculateSpotLightAttenuation(light, lightVector);
 
-	if (surfaceRatio < coneRatio)
-	{
-		result.diffuse = calculateDiffuse(light, lightVector, normal) *coneIntensity; //find diffuse light while accounting for distance and intensity at its location in the spotlight's cone
-		result.specular = calculateSpecular(light, lightVector, normal, viewVector) * coneIntensity;
-	}
+	result.diffuse = calculateDiffuse(light, lightVector, normal) *coneIntensity; //find diffuse light while accounting for distance and intensity at its location in the spotlight's cone
+	result.specular = calculateSpecular(light, lightVector, normal, viewVector) * coneIntensity;
 	return result;
 }
 
@@ -143,6 +135,7 @@ LightingResult computeLighting(float4 Point, float3 normal)
 	for (int i = 0; i < MAX_LIGHTS; ++i)
 	{
 		LightingResult result = { { 0, 0, 0, 0 },{ 0, 0, 0, 0 } };
+		//if light isnt enabled, skip it
 		if (Lights[i].Enabled == 0)
 			continue;
 
