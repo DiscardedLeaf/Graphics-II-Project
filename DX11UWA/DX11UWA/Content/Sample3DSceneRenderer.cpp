@@ -574,27 +574,27 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		//directional light (the sun)
 		Light hereComesTheSun;
-		hereComesTheSun.Color = { 1.0f, 1.0f, 0.0f, 1.0f };
+		hereComesTheSun.Color = { 0.0f, 0.0f, 1.0f, 1.0f };
 		hereComesTheSun.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
-		hereComesTheSun.Enabled = 0;
+		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
 
 		//point light
 		Light star;
-		star.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		star.Color = { 0.0f, 1.0f, 0.0f, 1.0f };
 		star.Position = { 3.0f, 0.0f, 0.0f, 1.0f };
 		star.LightType = 1;
-		star.Enabled = 0;
+		star.Enabled = 1;
 		star.useQuadraticAttenuation = 1;
 		star.Radius = 10;
 
 		//spot light
 		Light flashLight;
 		flashLight.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
-		flashLight.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
+		flashLight.Direction = { 1.0f, 0.0f, 0.0f, 0.0f };
 		flashLight.Enabled = 1;
 		flashLight.LightType = 2;
-		flashLight.Position = { 0.0f, 3.0f, 0.0f, 1.0f };
+		flashLight.Position = { -3.0f, 0.0f, 0.0f, 1.0f };
 		flashLight.SpotAngle = PI * .25f;
 		flashLight.useQuadraticAttenuation = 1;
 		
