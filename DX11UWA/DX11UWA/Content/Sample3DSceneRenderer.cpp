@@ -57,7 +57,7 @@ void Sample3DSceneRenderer::LoadObjFile(const char * path,
 		{
 			XMFLOAT3 uv;
 			fscanf(file, "%f %f\n", &uv.x, &uv.y);
-			uv.z = 0.f;
+			uv.z = 0.0f;
 			uvs.push_back(uv);
 		}
 		else if (strcmp(buffer, "vn") == 0)
@@ -94,7 +94,7 @@ void Sample3DSceneRenderer::LoadObjFile(const char * path,
 		vert.pos = positions[vertexIndices[i]];
 		vert.normal = normals[normalIndices[i]];
 		vert.uv = uvs[uvIndices[i]];
-		for (int j = 0; j < objVertices.size(); ++j)
+		for (unsigned short j = 0; j < objVertices.size(); ++j)
 		{
 			if (vert.pos.x == objVertices[j].pos.x && vert.pos.y == objVertices[j].pos.y && vert.pos.z == objVertices[j].pos.z &&
 				vert.normal.x == objVertices[j].normal.x && vert.normal.y == objVertices[j].normal.y && vert.normal.z == objVertices[j].normal.z &&
@@ -117,13 +117,13 @@ void Sample3DSceneRenderer::LoadObjFile(const char * path,
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
 	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
 	vertexBufferData.pSysMem = &objVertices[0];
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionUVNormal) * objVertices.size(), D3D11_BIND_VERTEX_BUFFER);
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(objVertices[0]) * objVertices.size(), D3D11_BIND_VERTEX_BUFFER);
 	DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer));
 
 	D3D11_SUBRESOURCE_DATA indexBufferData;
 	ZeroMemory(&indexBufferData, sizeof(indexBufferData));
 	indexBufferData.pSysMem = &objIndices[0];
-	CD3D11_BUFFER_DESC indexBufferDesc(sizeof(unsigned short) * objIndices.size(), D3D11_BIND_INDEX_BUFFER);
+	CD3D11_BUFFER_DESC indexBufferDesc(sizeof(objIndices[0]) * objIndices.size(), D3D11_BIND_INDEX_BUFFER);
 	DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
 
 }
@@ -196,6 +196,8 @@ void Sample3DSceneRenderer::Rotate(float radians)
 {
 	// Prepare to pass the updated model matrix to the shader
 	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+	XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixRotationY(radians), XMMatrixMultiply(XMMatrixTranslation(0.0f, -.5f, 0.0f), XMMatrixScaling(.25f, .25f, .25f)))));
+	XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
 }
 
 void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const moveSpd, float const rotSpd)
@@ -324,26 +326,26 @@ void Sample3DSceneRenderer::Render(void)
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
 
-	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	//XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 
-	// Prepare the constant buffer to send it to the graphics device.
-	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0, 0);
-	// Each vertex is one instance of the VertexPositionColor struct.
+	//// Prepare the constant buffer to send it to the graphics device.
+	//context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0, 0);
+	//// Each vertex is one instance of the VertexPositionColor struct.
 	UINT stride = sizeof(VertexPositionColor);
 	UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-	// Each index is one 16-bit unsigned integer (short).
-	context->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	context->IASetInputLayout(m_inputLayout.Get());
-	// Attach our vertex shader.
-	context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	// Send the constant buffer to the graphics device.
-	context->VSSetConstantBuffers1(0, 1, m_constantBuffer.GetAddressOf(), nullptr, nullptr);
-	// Attach our pixel shader.
-	context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-	// Draw the cube
-	context->DrawIndexed(m_indexCount, 0, 0);
+	//context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+	//// Each index is one 16-bit unsigned integer (short).
+	//context->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	//context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//context->IASetInputLayout(m_inputLayout.Get());
+	//// Attach our vertex shader.
+	//context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	//// Send the constant buffer to the graphics device.
+	//context->VSSetConstantBuffers1(0, 1, m_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	//// Attach our pixel shader.
+	//context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+	//// Draw the cube
+	//context->DrawIndexed(m_indexCount, 0, 0);
 
 
 
@@ -372,17 +374,23 @@ void Sample3DSceneRenderer::Render(void)
 	//----------------------------------------------------------------------------------------------------------------------------------
 	//dead penguin
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
+	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
 	stride = sizeof(VertexPositionUVNormal);
 
-	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &pDeath_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &pDeath_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &pDeath_materialProperties, 0, 0, 0);
+	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
 	context->IASetVertexBuffers(0, 1, pDeath_vertexBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(pDeath_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	context->IASetInputLayout(n_inputLayout.Get());
 
 	context->VSSetShader(n_vertexShader.Get(), nullptr, 0);
-	context->VSSetConstantBuffers1(0, 1, m_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->VSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
+	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	
 	context->DrawIndexed(pDeath_indexCount, 0, 0);
 
@@ -427,17 +435,25 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = 
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "UV", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		};
 
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), &fileData[0], fileData.size(), &n_inputLayout));
 	});
 
-	//After the obj directional pixel shader file is loaded, create the shader
+	//After the obj directional pixel shader file is loaded, create the shader and constant buffers
 	auto createObjDirPSTask = loadObjDirPSTask.then([this](const std::vector<byte>& fileData)
 	{
+		//add some textures here later
+
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreatePixelShader(&fileData[0], fileData.size(), nullptr, &nDir_pixelShader));
+		CD3D11_BUFFER_DESC n_constantBufferDesc(sizeof(PerObjectBuffer), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&n_constantBufferDesc, nullptr, &n_constantBuffer));
+		CD3D11_BUFFER_DESC t_constantBufferDesc(sizeof(MaterialProperties), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&t_constantBufferDesc, nullptr, &t_constantBuffer));
+		CD3D11_BUFFER_DESC l_constantBufferDesc(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&l_constantBufferDesc, nullptr, &l_constantBuffer));
 	});
 
 	// Once both shaders are loaded, create the mesh.
@@ -537,11 +553,60 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createPencassoDeathTask = (createObjVSTask && createObjDirPSTask).then([this]()
 	{
 		LoadObjFile("Assets/PencassoDeath.obj", pDeath_vertexBuffer, pDeath_indexBuffer, pDeath_indexCount);
-		XMStoreFloat4x4(&pDeath_constantBufferData.model, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(5.0f, -.5f, 5.0f),XMMatrixScaling(.5f, .5f, .5f))));
+		XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0f, -.5f, 0.0f),XMMatrixScaling(.25f, .25f, .25f))));
+		XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
+		_Material deadPenguin;
+		deadPenguin.Ambient = { .25f, .25f, .25f, .25f };
+		deadPenguin.Diffuse = { 0.5f, 0.5f, 0.5f, 0.5f };
+		deadPenguin.Emissive = { 0.0f, 0.0f, 0.0f, 0.0f };
+		deadPenguin.Specular = { 0.5f, 0.5f, 0.5f, 0.5f };
+		deadPenguin.SpecularPower = 32;
+		deadPenguin.useTexture = false;
+
+		pDeath_materialProperties.material = deadPenguin;
 	});
 
+	auto createLights = (createObjDirPSTask).then([this]()
+	{
+		//initialize all lights to disabled
+		for (int i = 0; i < MAX_LIGHTS; ++i)
+			m_lighting.Lights[i].Enabled = 0;
+
+		//directional light (the sun)
+		Light hereComesTheSun;
+		hereComesTheSun.Color = { 1.0f, 1.0f, 0.0f, 1.0f };
+		hereComesTheSun.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
+		hereComesTheSun.Enabled = 0;
+		hereComesTheSun.LightType = 0;
+
+		//point light
+		Light star;
+		star.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		star.Position = { 3.0f, 0.0f, 0.0f, 1.0f };
+		star.LightType = 1;
+		star.Enabled = 0;
+		star.useQuadraticAttenuation = 1;
+		star.Radius = 10;
+
+		//spot light
+		Light flashLight;
+		flashLight.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
+		flashLight.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
+		flashLight.Enabled = 1;
+		flashLight.LightType = 2;
+		flashLight.Position = { 0.0f, 3.0f, 0.0f, 1.0f };
+		flashLight.SpotAngle = 3.14159265359 * .25f;
+		flashLight.useQuadraticAttenuation = 1;
+		
+		//add all created lights to the list
+		m_lighting.Lights[0] = hereComesTheSun;
+		m_lighting.Lights[1] = star;
+		m_lighting.GlobalAmbient = { 0.25f, 0.25f, 0.25f, 0.25f };
+	});
+
+
 	// Once the objects are loaded, the objects are ready to be rendered.
-	(createCubeTask && createGridTask && createPencassoDeathTask).then([this]()
+	(createCubeTask && createGridTask && createPencassoDeathTask && createLights).then([this]()
 	{
 		m_loadingComplete = true;
 	});
@@ -557,8 +622,13 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	m_pixelShader.Reset();
 	nDir_pixelShader.Reset();
 	m_constantBuffer.Reset();
+	n_constantBuffer.Reset();
+	t_constantBuffer.Reset();
+	l_constantBuffer.Reset();
 	m_vertexBuffer.Reset();
 	g_vertexBuffer.Reset();
+	pDeath_vertexBuffer.Reset();
 	m_indexBuffer.Reset();
 	g_indexBuffer.Reset();
+	pDeath_indexBuffer.Reset();
 }
