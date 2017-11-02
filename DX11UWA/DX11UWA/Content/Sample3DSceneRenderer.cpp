@@ -379,6 +379,11 @@ void Sample3DSceneRenderer::Render(void)
 
 	//----------------------------------------------------------------------------------------------------------------------------------
 	//dead penguin
+	//rotate the directional light
+	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationZ(-.01f)));
+	//move the point light
+	XMStoreFloat4(&m_lighting.Lights[0].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixMultiply(XMMatrixRotationY(0.05), XMMatrixTranslation(m_lighting.Lights[1].Position.x, m_lighting.Lights[1].Position.y, m_lighting.Lights[1].Position.z))));
+
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
 	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
@@ -624,8 +629,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//directional light (the sun)
 		Light hereComesTheSun;
 		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		hereComesTheSun.Direction = { 0.0f, 1.0f, 0.0f, 0.0f };
-		hereComesTheSun.Enabled = 1;
+		hereComesTheSun.Direction = { 1.0f, 0.0f, 0.0f, 0.0f };
+		hereComesTheSun.Enabled = 0;
 		hereComesTheSun.LightType = 0;
 
 		//point light
@@ -641,7 +646,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		Light flashLight;
 		flashLight.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
 		flashLight.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
-		flashLight.Enabled = 1;
+		flashLight.Enabled = 0;
 		flashLight.LightType = 2;
 		flashLight.Position = { -3.0f, 5.0f, 0.0f, 1.0f };
 		flashLight.SpotAngle = PI * .125f;
