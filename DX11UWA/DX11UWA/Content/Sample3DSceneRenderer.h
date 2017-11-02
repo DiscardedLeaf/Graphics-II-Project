@@ -38,50 +38,51 @@ namespace DX11UWA
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
 		//Direct3D input layouts
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>	m_inputLayout; //position and uv's
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>   n_inputLayout; //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>			m_inputLayout;			 //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>			n_inputLayout;			 //position, uv's and normals
 
 		//Direct3D vertex shaders
-		Microsoft::WRL::ComPtr<ID3D11VertexShader>	m_vertexShader; //position and uv's
-		Microsoft::WRL::ComPtr<ID3D11VertexShader>  n_vertexShader; //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>			m_vertexShader;			 //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>			n_vertexShader;			 //position, uv's and normals
 
 		//Direct3D pixel shaders
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>	m_pixelShader; //position and uv's
-		Microsoft::WRL::ComPtr<ID3D11PixelShader>   nDir_pixelShader; //position, uv's and normals for directional light
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light
 
 		//Direct3D constant buffers
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_constantBuffer;  //constant buffer for world objects
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		n_constantBuffer;  //constant buffer for normalized world objects
-		Microsoft::WRL::ComPtr<ID3D11Buffer>        t_constantBuffer;  //constant buffer for texturing
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		l_constantBuffer;  //constant buffer for lighting
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_constantBuffer;		 //constant buffer for world objects
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				n_constantBuffer;	     //constant buffer for normalized world objects
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				t_constantBuffer;		 //constant buffer for texturing
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				l_constantBuffer;		 //constant buffer for lighting
 
 		//Direct3D texture objects
-		Microsoft::WRL::ComPtr<ID3D11Texture2D>     p_texture; //texture object for pencasso
+		Microsoft::WRL::ComPtr<ID3D11Texture2D>				p_texture;				//texture object for pencasso
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	p_ShaderResourceView;	//shader resource view for the pencasso texture
 
 		//Direct3D sampler objects
-		Microsoft::WRL::ComPtr<ID3D11SamplerState>  p_sampler; //sampler object for pencasso
+		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
 
 		// Cube Resources
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		m_indexBuffer;
-		ModelViewProjectionConstantBuffer			m_constantBufferData;
-		uint32										m_indexCount;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_indexBuffer;
+		ModelViewProjectionConstantBuffer					m_constantBufferData;
+		uint32												m_indexCount;
 
 		//Lower Plane Resources
-		Microsoft::WRL::ComPtr<ID3D11Buffer>        g_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		g_indexBuffer;
-		ModelViewProjectionConstantBuffer			g_constantBufferData;
-		uint32										g_indexCount;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				g_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				g_indexBuffer;
+		ModelViewProjectionConstantBuffer					g_constantBufferData;
+		uint32												g_indexCount;
 
 		//Pencasso Resources
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer>		pDeath_indexBuffer;
-		PerObjectBuffer								pDeath_constantBufferData;
-		uint32										pDeath_indexCount;
-		MaterialProperties							pDeath_materialProperties;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				pDeath_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				pDeath_indexBuffer;
+		PerObjectBuffer										pDeath_constantBufferData;
+		uint32												pDeath_indexCount;
+		MaterialProperties									pDeath_materialProperties;
 
 		//Light Objects
-		LightProperties								m_lighting;
+		LightProperties										m_lighting;
 
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;

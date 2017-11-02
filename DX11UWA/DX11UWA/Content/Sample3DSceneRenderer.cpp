@@ -2,6 +2,7 @@
 #include "Sample3DSceneRenderer.h"
 #include <fstream>
 #include "..\Common\DirectXHelper.h"
+#include "Common\DDSTextureLoader.h"
 
 using namespace DX11UWA;
 using namespace std;
@@ -57,6 +58,7 @@ void Sample3DSceneRenderer::LoadObjFile(const char * path,
 		{
 			XMFLOAT3 uv;
 			fscanf(file, "%f %f\n", &uv.x, &uv.y);
+			uv.y = 1 - uv.y;
 			uv.z = 0.0f;
 			uvs.push_back(uv);
 		}
@@ -391,6 +393,8 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+	context->PSSetShaderResources(0, 1, p_ShaderResourceView.GetAddressOf());
 	
 	context->DrawIndexed(pDeath_indexCount, 0, 0);
 
@@ -445,15 +449,43 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	//After the obj directional pixel shader file is loaded, create the shader and constant buffers
 	auto createObjDirPSTask = loadObjDirPSTask.then([this](const std::vector<byte>& fileData)
 	{
-		//add some textures here later
-
+		//create the pixel shader
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreatePixelShader(&fileData[0], fileData.size(), nullptr, &nDir_pixelShader));
+
+		//create the constant buffers
 		CD3D11_BUFFER_DESC n_constantBufferDesc(sizeof(PerObjectBuffer), D3D11_BIND_CONSTANT_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&n_constantBufferDesc, nullptr, &n_constantBuffer));
 		CD3D11_BUFFER_DESC t_constantBufferDesc(sizeof(MaterialProperties), D3D11_BIND_CONSTANT_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&t_constantBufferDesc, nullptr, &t_constantBuffer));
 		CD3D11_BUFFER_DESC l_constantBufferDesc(sizeof(LightProperties), D3D11_BIND_CONSTANT_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&l_constantBufferDesc, nullptr, &l_constantBuffer));
+
+		//create sampler object
+		D3D11_SAMPLER_DESC m_sampler_desc;
+		m_sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
+		m_sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		m_sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		m_sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		m_sampler_desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		m_sampler_desc.BorderColor[0] = 1.0f;
+		m_sampler_desc.BorderColor[1] = 1.0f;
+		m_sampler_desc.BorderColor[2] = 1.0f;
+		m_sampler_desc.BorderColor[3] = 1.0f;
+		m_sampler_desc.MaxAnisotropy = 1;
+		m_sampler_desc.MipLODBias = 0;
+		m_sampler_desc.MaxLOD = FLT_MAX;
+		m_sampler_desc.MinLOD = -FLT_MAX;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateSamplerState(&m_sampler_desc, &m_sampler));
+
+		////create pencasso texture
+		//D3D11_TEXTURE2D_DESC pDeath_texture_desc;
+		//pDeath_texture_desc.Width = 2048;
+		//pDeath_texture_desc.Height = 2048;
+		//pDeath_texture_desc.MipLevels = 0;
+		//pDeath_texture_desc.ArraySize = 0;
+
+		//
+
 	});
 
 	// Once both shaders are loaded, create the mesh.
@@ -552,18 +584,25 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	auto createPencassoDeathTask = (createObjVSTask && createObjDirPSTask).then([this]()
 	{
+		//load vertex data
 		LoadObjFile("Assets/PencassoDeath.obj", pDeath_vertexBuffer, pDeath_indexBuffer, pDeath_indexCount);
+
+		//create world and inversetransposeworld matrices
 		XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f),XMMatrixScaling(.25f, .25f, .25f))));
 		XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
+
+		//create a material to use for the dead penguin and set the constant buffer data to use it
 		_Material deadPenguin;
 		deadPenguin.Ambient = { .25f, .25f, .25f, .25f };
-		deadPenguin.Diffuse = { 0.5f, 0.5f, 0.5f, 0.5f };
+		deadPenguin.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 		deadPenguin.Emissive = { 0.0f, 0.0f, 0.0f, 0.0f };
-		deadPenguin.Specular = { 0.5f, 0.5f, 0.5f, 0.5f };
+		deadPenguin.Specular = { 1.0f, 1.0f, 1.0f, 1.0f };
 		deadPenguin.SpecularPower = 32;
-		deadPenguin.useTexture = false;
-
+		deadPenguin.useTexture = true;
 		pDeath_materialProperties.material = deadPenguin;
+
+		//use dds texture file creater to make the pencasso shaderResourceView
+		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/peng.dds", nullptr, &p_ShaderResourceView));
 	});
 
 	auto createLights = (createObjDirPSTask).then([this]()
@@ -574,7 +613,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		//directional light (the sun)
 		Light hereComesTheSun;
-		hereComesTheSun.Color = { 0.0f, 0.0f, 1.0f, 1.0f };
+		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		hereComesTheSun.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
 		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
