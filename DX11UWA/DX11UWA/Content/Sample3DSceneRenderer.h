@@ -71,8 +71,9 @@ namespace DX11UWA
 		//Lower Plane Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				g_vertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				g_indexBuffer;
-		ModelViewProjectionConstantBuffer					g_constantBufferData;
+		PerObjectBuffer										g_constantBufferData;
 		uint32												g_indexCount;
+		MaterialProperties									g_materialProperties;
 
 		//Pencasso Resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				pDeath_vertexBuffer;

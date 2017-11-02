@@ -353,22 +353,26 @@ void Sample3DSceneRenderer::Render(void)
 
 	//--------------------------------------------------------------------------------------------------------------------------
 
-
+	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	//Set constant buffer's world matrix to plane's world matrix
-	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &g_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &g_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &g_materialProperties, 0, 0, 0);
+	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
 
 	//set vertex buffer to plane
+	stride = sizeof(VertexPositionUVNormal);
 	context->IASetVertexBuffers(0, 1, g_vertexBuffer.GetAddressOf(), &stride, &offset);
-	//set index buffer to plane
 	context->IASetIndexBuffer(g_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	context->IASetInputLayout(m_inputLayout.Get());
+	context->IASetInputLayout(n_inputLayout.Get());
 
-	context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	context->VSSetConstantBuffers1(0, 1, m_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->VSSetShader(n_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
 
-	context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
+	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	
 	context->DrawIndexed(g_indexCount, 0, 0);
 
@@ -383,6 +387,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &pDeath_constantBufferData, 0, 0, 0);
 	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &pDeath_materialProperties, 0, 0, 0);
 	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
+
 	context->IASetVertexBuffers(0, 1, pDeath_vertexBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(pDeath_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -477,15 +482,6 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		m_sampler_desc.MinLOD = -FLT_MAX;
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateSamplerState(&m_sampler_desc, &m_sampler));
 
-		////create pencasso texture
-		//D3D11_TEXTURE2D_DESC pDeath_texture_desc;
-		//pDeath_texture_desc.Width = 2048;
-		//pDeath_texture_desc.Height = 2048;
-		//pDeath_texture_desc.MipLevels = 0;
-		//pDeath_texture_desc.ArraySize = 0;
-
-		//
-
 	});
 
 	// Once both shaders are loaded, create the mesh.
@@ -547,14 +543,18 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer));
 	});
 
-	auto createGridTask = (createPSTask && createVSTask).then([this]()
+	auto createFloorTask = (createObjDirPSTask && createObjVSTask).then([this]()
 	{
-		static VertexPositionColor gridVertices[] = 
+		static VertexPositionUVNormal gridVertices[] = 
 		{
-			{XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
-			{XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
-			{XMFLOAT3( 1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
-			{XMFLOAT3( 1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)}
+			{XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f,  1.0f, 0.0f)},
+			{XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f,  1.0f, 0.0f)},
+			{XMFLOAT3( 1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(0.0f,  1.0f, 0.0f)},
+			{XMFLOAT3( 1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f,  1.0f, 0.0f)},
+			{XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)},
+			{XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)},
+			{XMFLOAT3( 1.0f, 0.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)},
+			{XMFLOAT3( 1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)}
 		};
 
 		D3D11_SUBRESOURCE_DATA vertexData;
@@ -565,11 +565,11 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		static const unsigned short gridIndices[] =
 		{
-			0,1,2, //triangle 1 back and front
-			2,1,0,
+			0,1,2, //top of plane
+			0,2,3,
 
-			0,2,3, //triangle 2 back and front
-			3,2,0
+			6,5,4, //bottom of plane
+			7,6,4
 		};
 
 		g_indexCount = ARRAYSIZE(gridIndices);
@@ -579,7 +579,17 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		CD3D11_BUFFER_DESC indexBufferDesc(sizeof(gridIndices), D3D11_BIND_INDEX_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &g_indexBuffer));
 
-		XMStoreFloat4x4(&g_constantBufferData.model, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(2, 1, 2))));
+		_Material obsidian;
+		obsidian.Ambient = { .05375f, .05f, .06625f, 1.0f };
+		obsidian.Diffuse = { .18275f, .17f, .22525f, 1.0f };
+		obsidian.Emissive = { 0.0f, 0.0f, 0.0f, 0.0f };
+		obsidian.Specular = { .332741f, .328634f, .346435f, 1.0f };
+		obsidian.SpecularPower = 38.4f;
+		obsidian.useTexture = false;
+		g_materialProperties.material = obsidian;
+
+		XMStoreFloat4x4(&g_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(5, 1, 5))));
+		XMStoreFloat4x4(&g_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&g_constantBufferData.world))));
 	});
 
 	auto createPencassoDeathTask = (createObjVSTask && createObjDirPSTask).then([this]()
@@ -614,7 +624,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//directional light (the sun)
 		Light hereComesTheSun;
 		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		hereComesTheSun.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
+		hereComesTheSun.Direction = { 0.0f, 1.0f, 0.0f, 0.0f };
 		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
 
@@ -630,11 +640,11 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//spot light
 		Light flashLight;
 		flashLight.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
-		flashLight.Direction = { 1.0f, 0.0f, 0.0f, 0.0f };
+		flashLight.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
 		flashLight.Enabled = 1;
 		flashLight.LightType = 2;
-		flashLight.Position = { -3.0f, 0.0f, 0.0f, 1.0f };
-		flashLight.SpotAngle = PI * .25f;
+		flashLight.Position = { -3.0f, 5.0f, 0.0f, 1.0f };
+		flashLight.SpotAngle = PI * .125f;
 		flashLight.useQuadraticAttenuation = 1;
 		
 		//add all created lights to the list
@@ -646,7 +656,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 
 	// Once the objects are loaded, the objects are ready to be rendered.
-	(createCubeTask && createGridTask && createPencassoDeathTask && createLights).then([this]()
+	(createCubeTask && createFloorTask && createPencassoDeathTask && createLights).then([this]()
 	{
 		m_loadingComplete = true;
 	});
