@@ -382,7 +382,7 @@ void Sample3DSceneRenderer::Render(void)
 	//rotate the directional light
 	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationZ(-.01f)));
 	//move the point light
-	XMStoreFloat4(&m_lighting.Lights[0].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixMultiply(XMMatrixRotationY(0.05), XMMatrixTranslation(m_lighting.Lights[1].Position.x, m_lighting.Lights[1].Position.y, m_lighting.Lights[1].Position.z))));
+	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.01f)));
 
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
@@ -593,7 +593,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		obsidian.useTexture = false;
 		g_materialProperties.material = obsidian;
 
-		XMStoreFloat4x4(&g_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(5, 1, 5))));
+		XMStoreFloat4x4(&g_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0, -.51f, 0), XMMatrixScaling(10, 1, 10))));
 		XMStoreFloat4x4(&g_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&g_constantBufferData.world))));
 	});
 
