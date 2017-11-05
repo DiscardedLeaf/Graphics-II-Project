@@ -382,7 +382,11 @@ void Sample3DSceneRenderer::Render(void)
 	//rotate the directional light
 	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationZ(-.01f)));
 	//move the point light
-	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.01f)));
+	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.05f)));
+	//move the spot light and change its direction
+	XMStoreFloat4(&m_lighting.Lights[2].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Direction), XMMatrixRotationZ(-.05f)));
+	XMStoreFloat4(&m_lighting.Lights[2].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Position), XMMatrixRotationY(-.03f)));
+	
 
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
@@ -630,13 +634,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		Light hereComesTheSun;
 		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		hereComesTheSun.Direction = { 1.0f, 0.0f, 0.0f, 0.0f };
-		hereComesTheSun.Enabled = 0;
+		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
 
 		//point light
 		Light star;
 		star.Color = { 0.0f, 1.0f, 0.0f, 1.0f };
-		star.Position = { 3.0f, 0.0f, 0.0f, 1.0f };
+		star.Position = { 5.0f, 0.0f, 0.0f, 1.0f };
 		star.LightType = 1;
 		star.Enabled = 1;
 		star.useQuadraticAttenuation = 1;
@@ -645,11 +649,11 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//spot light
 		Light flashLight;
 		flashLight.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
-		flashLight.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
-		flashLight.Enabled = 0;
+		flashLight.Direction = { .1f, -1.0f, 0.0f, 0.0f };
+		flashLight.Enabled = 1;
 		flashLight.LightType = 2;
-		flashLight.Position = { -3.0f, 5.0f, 0.0f, 1.0f };
-		flashLight.SpotAngle = PI * .125f;
+		flashLight.Position = { 4.0f, 3.0f, 0.0f, 1.0f };
+		flashLight.SpotAngle = PI *.125f;
 		flashLight.useQuadraticAttenuation = 1;
 		
 		//add all created lights to the list
