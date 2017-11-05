@@ -70,7 +70,7 @@ float calculateSpotLightAttenuation(Light light, float3 lightVector)
 {
 	float minCos = cos(light.SpotAngle);
 	float maxCos = (minCos + 1.0f) / 2.0f;
-	float cosAngle = dot(light.Direction.xyz, -lightVector);
+	float cosAngle = dot(normalize(light.Direction.xyz), -lightVector);
 	return smoothstep(minCos, maxCos, cosAngle);
 }
 
