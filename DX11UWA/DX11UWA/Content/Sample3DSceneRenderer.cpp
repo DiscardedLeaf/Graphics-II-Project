@@ -412,6 +412,9 @@ void Sample3DSceneRenderer::Render(void)
 	
 	context->DrawIndexed(pDeath_indexCount, 0, 0);
 
+	//geoShader objects
+
+
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
@@ -421,6 +424,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
 	auto loadObjVSTask = DX::ReadDataAsync(L"ObjVertexShader.cso");
 	auto loadObjDirPSTask = DX::ReadDataAsync(L"ObjDirectionalPixelShader.cso");
+	auto loadGSTask = DX::ReadDataAsync(L"GeometryShader.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData)
@@ -491,6 +495,11 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		m_sampler_desc.MinLOD = -FLT_MAX;
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateSamplerState(&m_sampler_desc, &m_sampler));
 
+	});
+
+	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateGeometryShader(&fileData[0], fileData.size(), nullptr, &n_geometryShader));
 	});
 
 	// Once both shaders are loaded, create the mesh.
@@ -665,14 +674,46 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	auto createGeoShaderStuff = createGeoShaderTask.then([this]()
 	{
-		static VertexPositionUVNormal geoPoints[] = 
+		static vector<VertexPositionUVNormal> geoPoints;
+		for (int i = 0; i < 50; ++i)
 		{
-			XMFLOAT3()
-		};
+			VertexPositionUVNormal point;
+			float x, z;
+			x = rand() % 1000;
+			x = (x / 500.0f) - 1.0f;
+			z = rand() % 1000;
+			z = (z / 500.0f) - 1.0f;
+			point.pos = XMFLOAT3(x, 0.0f, z);
+			point.normal = XMFLOAT3(0.0f, 0.0f, 1.0f);
+			point.uv = XMFLOAT3(0.0f, 1.0f, 0.0f);
+			geoPoints.push_back(point);
+		}
+		D3D11_SUBRESOURCE_DATA vertexData;
+		ZeroMemory(&vertexData, sizeof(vertexData));
+		vertexData.pSysMem = &geoPoints[0];
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.ByteWidth = sizeof(geoPoints[0]) * geoPoints.size();
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = sizeof(geoPoints[0]);
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &geo_vertexBuffer));
+
+		_Material ruby;
+		ruby.Ambient = { .1745f, .01175f, 0.1175f, 1.0f };
+		ruby.Diffuse = {.61424f, .04136f, .04136f, 1.0f};
+		ruby.Emissive = { 0.0f, 0.0f, 0.0f, 0.0f };
+		ruby.Specular = { .727811f, .626959f, .626959f, 1.0f };
+		ruby.SpecularPower = 76.8f;
+		ruby.useTexture = false;
+
+		XMStoreFloat4x4(&geo_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(5.0f, 0.0f, 5.0f)));
+		XMStoreFloat4x4(&geo_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&geo_constantBufferData.world))));
 	});
 
 	// Once the objects are loaded, the objects are ready to be rendered.
-	(createCubeTask && createFloorTask && createPencassoDeathTask && createLights).then([this]()
+	(createCubeTask && createFloorTask && createPencassoDeathTask && createLights && createGeoShaderStuff).then([this]()
 	{
 		m_loadingComplete = true;
 	});
