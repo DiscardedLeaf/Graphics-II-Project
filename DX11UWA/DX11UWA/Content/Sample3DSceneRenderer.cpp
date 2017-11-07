@@ -136,6 +136,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	Size outputSize = m_deviceResources->GetOutputSize();
 	float aspectRatio = outputSize.Width / outputSize.Height;
 	float fovAngleY = 70.0f * XM_PI / 180.0f;
+	camNearPlane = .01f;
+	camFarPlane = 100.0f;
 
 	// This is a simple example of change that can be made when the app is in
 	// portrait or snapped view.
@@ -151,7 +153,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	// this transform should not be applied.
 
 	// This sample makes use of a right-handed coordinate system using row-major matrices.
-	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, 0.01f, 100.0f);
+	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, camNearPlane, camFarPlane);
 
 	XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
 
@@ -207,6 +209,9 @@ void Sample3DSceneRenderer::Rotate(float radians)
 void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const moveSpd, float const rotSpd)
 {
 	const float delta_time = (float)timer.GetElapsedSeconds();
+	Size outputSize = m_deviceResources->GetOutputSize();
+	float aspectRatio = outputSize.Width / outputSize.Height;
+	float fovAngleY = 70.0f * XM_PI / 180.0f;
 
 	if (m_kbuttons['W'])
 	{
@@ -249,6 +254,70 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMMATRIX temp_camera = XMLoadFloat4x4(&m_camera);
 		XMMATRIX result = XMMatrixMultiply(translation, temp_camera);
 		XMStoreFloat4x4(&m_camera, result);
+	}
+	if (m_kbuttons['N']) //lowers the near plane
+	{
+		camNearPlane -= 10.f * delta_time;
+		if (camNearPlane < .01f)
+			camNearPlane = .01f;
+		XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, camNearPlane, camFarPlane);
+
+		XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
+
+		XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+		XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	}
+	if (m_kbuttons['J']) //increases the near plane
+	{
+		camNearPlane += 10.f * delta_time;
+		if (camNearPlane > 1000.f)
+			camNearPlane = 1000.f;
+		XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, camNearPlane, camFarPlane);
+
+		XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
+
+		XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+		XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	}
+	if (m_kbuttons['M']) //lowers the far plane (it'll take a while before you notice it)
+	{
+		camFarPlane -= 10.f * delta_time;
+		if (camFarPlane < camNearPlane)
+			camFarPlane = camNearPlane + .01f;
+		XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, camNearPlane, camFarPlane);
+
+		XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
+
+		XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+		XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	}
+	if (m_kbuttons['K']) //increases the far plane
+	{
+		camFarPlane += 10.f * delta_time;
+		if (camFarPlane > 1000000.f)
+			camFarPlane = 1000000.f;
+		XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, camNearPlane, camFarPlane);
+
+		XMFLOAT4X4 orientation = m_deviceResources->GetOrientationTransform3D();
+
+		XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+		XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	}
 
 	if (m_currMousePos) 

@@ -108,8 +108,8 @@ namespace DX11UWA
 
 		// Matrix data member for the camera
 		DirectX::XMFLOAT4X4 m_camera;
-		float camNearPlane;
-		float camFarPlane;
+		float camNearPlane; //n and j to affect near plane
+		float camFarPlane;  //m and k to affect far plane
 	};
 }
 
