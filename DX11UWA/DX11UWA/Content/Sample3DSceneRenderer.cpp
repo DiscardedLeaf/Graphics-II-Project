@@ -787,6 +787,8 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	g_vertexBuffer.Reset();
 	pDeath_vertexBuffer.Reset();
 	geo_vertexBuffer.Reset();
+	geo_ShaderResourceView.Reset();
+	p_ShaderResourceView.Reset();
 	m_indexBuffer.Reset();
 	g_indexBuffer.Reset();
 	pDeath_indexBuffer.Reset();
