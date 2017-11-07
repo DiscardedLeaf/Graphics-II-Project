@@ -49,6 +49,9 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light
 
+		//Direct3D geometry shaders
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader>		n_geometryShader;		 //create geometry that can be lit and textured
+
 		//Direct3D constant buffers
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_constantBuffer;		 //constant buffer for world objects
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				n_constantBuffer;	     //constant buffer for normalized world objects
@@ -81,6 +84,11 @@ namespace DX11UWA
 		PerObjectBuffer										pDeath_constantBufferData;
 		uint32												pDeath_indexCount;
 		MaterialProperties									pDeath_materialProperties;
+
+		//first geoshader resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				geo_vertexBuffer;
+		PerObjectBuffer										geo_constantBufferData;
+		MaterialProperties									geo_materialProperties;
 
 		//Light Objects
 		LightProperties										m_lighting;
