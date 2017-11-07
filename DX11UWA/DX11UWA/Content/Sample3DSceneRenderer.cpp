@@ -160,6 +160,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 
 
 	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
@@ -171,6 +172,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+	XMStoreFloat4x4(&geo_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 
 }
 
@@ -353,6 +355,18 @@ void Sample3DSceneRenderer::Render(void)
 
 	//--------------------------------------------------------------------------------------------------------------------------
 
+	//lighting stuff
+	//rotate the directional light
+	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationX(-.01f)));
+	//move the point light
+	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.05f)));
+	//move the spot light and change its direction
+	XMStoreFloat4(&m_lighting.Lights[2].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Direction), XMMatrixRotationZ(-.05f)));
+	XMStoreFloat4(&m_lighting.Lights[2].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Position), XMMatrixRotationY(-.03f)));
+	//store the camera's new position
+	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
+	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
+
 	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	//Set constant buffer's world matrix to plane's world matrix
@@ -379,18 +393,8 @@ void Sample3DSceneRenderer::Render(void)
 
 	//----------------------------------------------------------------------------------------------------------------------------------
 	//dead penguin
-	//rotate the directional light
-	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationZ(-.01f)));
-	//move the point light
-	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.05f)));
-	//move the spot light and change its direction
-	XMStoreFloat4(&m_lighting.Lights[2].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Direction), XMMatrixRotationZ(-.05f)));
-	XMStoreFloat4(&m_lighting.Lights[2].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Position), XMMatrixRotationY(-.03f)));
-	
 
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
-	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
-	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
 	stride = sizeof(VertexPositionUVNormal);
 
 	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &pDeath_constantBufferData, 0, 0, 0);
@@ -414,7 +418,32 @@ void Sample3DSceneRenderer::Render(void)
 
 	//geoShader objects
 
+	XMStoreFloat4x4(&geo_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	stride = sizeof(VertexPositionUVNormal);
 
+	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &geo_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &geo_materialProperties, 0, 0, 0);
+	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
+
+	context->IASetVertexBuffers(0, 1, geo_vertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(geo_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->IASetInputLayout(n_inputLayout.Get());
+
+	context->VSSetShader(n_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->GSSetShader(n_geometryShader.Get(), nullptr, 0);
+	context->GSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
+	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+	//context->PSSetShaderResources(0, 1, p_ShaderResourceView.GetAddressOf()); replace with geoShaderResourceView whenever you actually create that
+
+	context->DrawIndexed(geo_indexCount, 0, 0);
+
+	//set the geometry shader to null so it doesnt screw the other draws up
+	context->GSSetShader(nullptr, nullptr, 0);
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
@@ -642,7 +671,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//directional light (the sun)
 		Light hereComesTheSun;
 		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		hereComesTheSun.Direction = { 1.0f, 0.0f, 0.0f, 0.0f };
+		hereComesTheSun.Direction = { 0.0f, 0.0f, -1.0f, 0.0f };
 		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
 
@@ -675,6 +704,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createGeoShaderStuff = createGeoShaderTask.then([this]()
 	{
 		static vector<VertexPositionUVNormal> geoPoints;
+		static vector<unsigned short> geoIndices;
 		for (int i = 0; i < 50; ++i)
 		{
 			VertexPositionUVNormal point;
@@ -687,10 +717,14 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 			point.normal = XMFLOAT3(0.0f, 0.0f, 1.0f);
 			point.uv = XMFLOAT3(0.0f, 1.0f, 0.0f);
 			geoPoints.push_back(point);
+			geoIndices.push_back(i);
 		}
+		geo_indexCount = geoIndices.size();
+
 		D3D11_SUBRESOURCE_DATA vertexData;
 		ZeroMemory(&vertexData, sizeof(vertexData));
 		vertexData.pSysMem = &geoPoints[0];
+
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.ByteWidth = sizeof(geoPoints[0]) * geoPoints.size();
@@ -700,6 +734,19 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &geo_vertexBuffer));
 
+		D3D11_SUBRESOURCE_DATA indexData;
+		ZeroMemory(&indexData, sizeof(indexData));
+		indexData.pSysMem = &geoIndices[0];
+
+		D3D11_BUFFER_DESC indexBufferDesc;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.ByteWidth = sizeof(geoIndices[0]) * geoIndices.size();
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = sizeof(geoIndices[0]);
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &geo_indexBuffer));
+
 		_Material ruby;
 		ruby.Ambient = { .1745f, .01175f, 0.1175f, 1.0f };
 		ruby.Diffuse = {.61424f, .04136f, .04136f, 1.0f};
@@ -707,8 +754,9 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		ruby.Specular = { .727811f, .626959f, .626959f, 1.0f };
 		ruby.SpecularPower = 76.8f;
 		ruby.useTexture = false;
+		geo_materialProperties.material = ruby;
 
-		XMStoreFloat4x4(&geo_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(5.0f, 0.0f, 5.0f)));
+		XMStoreFloat4x4(&geo_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0, -3.0f, 0.0f),XMMatrixScaling(10.0f, 0.0f, 10.0f))));
 		XMStoreFloat4x4(&geo_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&geo_constantBufferData.world))));
 	});
 
@@ -724,6 +772,7 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	m_loadingComplete = false;
 	m_vertexShader.Reset();
 	n_vertexShader.Reset();
+	n_geometryShader.Reset();
 	m_inputLayout.Reset();
 	n_inputLayout.Reset();
 	m_pixelShader.Reset();
@@ -735,7 +784,9 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	m_vertexBuffer.Reset();
 	g_vertexBuffer.Reset();
 	pDeath_vertexBuffer.Reset();
+	geo_vertexBuffer.Reset();
 	m_indexBuffer.Reset();
 	g_indexBuffer.Reset();
 	pDeath_indexBuffer.Reset();
+	geo_indexBuffer.Reset();
 }

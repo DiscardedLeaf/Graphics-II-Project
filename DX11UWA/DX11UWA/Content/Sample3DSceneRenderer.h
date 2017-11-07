@@ -87,7 +87,9 @@ namespace DX11UWA
 
 		//first geoshader resources
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				geo_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				geo_indexBuffer;
 		PerObjectBuffer										geo_constantBufferData;
+		uint32												geo_indexCount;
 		MaterialProperties									geo_materialProperties;
 
 		//Light Objects
