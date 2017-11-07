@@ -663,6 +663,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		m_lighting.GlobalAmbient = { 0.25f, 0.25f, 0.25f, 0.25f };
 	});
 
+	auto createGeoShaderStuff = createGeoShaderTask.then([this]()
+	{
+		static VertexPositionUVNormal geoPoints[] = 
+		{
+			XMFLOAT3()
+		};
+	});
 
 	// Once the objects are loaded, the objects are ready to be rendered.
 	(createCubeTask && createFloorTask && createPencassoDeathTask && createLights).then([this]()
