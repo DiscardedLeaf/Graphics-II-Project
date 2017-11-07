@@ -80,13 +80,14 @@ void main(
 	//square 2 vertex 1 
 	v5.pos = input[0].pos; //same position as v1 
 	v5.posWS = input[0].posWS; 
-	v5.uv = reverseUV; 
+	tempUV = reverseUV;
+	tempUV.x -= 1;
+	v5.uv = tempUV; 
 
 	//square 2 vertex 2
 	tempPos = input[0].posWS;
 	tempPos.x += 1; //same position as vertex v3 (so it gets drawn in the opposite order and appears while the camera is on both sides)
 	tempUV = reverseUV;
-	tempUV.x -= 1; //subtract x this time since the uv is flipped
 	v6.pos = mul(mul(tempPos, view), projection);
 	v6.posWS = tempPos;
 	v6.uv = tempUV;
@@ -96,15 +97,10 @@ void main(
 	tempPos.y += 1;
 	tempUV = reverseUV;
 	tempUV.y -= 1;
+	tempUV.x -= 1;
 	v7.pos = mul(mul(tempPos, view), projection);
 	v7.posWS = tempPos;
 	v7.uv = tempUV;
-
-	tempNormal = normalize(cross((v6.posWS.xyz - v5.posWS.xyz), (v7.posWS.xyz - v5.posWS.xyz)));
-	v5.normWS = -tempNormal;
-	v6.normWS = -tempNormal;
-	v7.normWS = -tempNormal;
-	v8.normWS = -tempNormal;
 
 
 	//square 2 vertex 4
@@ -112,10 +108,16 @@ void main(
 	tempPos.x += 1;
 	tempPos.y += 1;
 	tempUV = reverseUV;
-	tempUV.x -= 1;
+	tempUV.y -= 1;
 	v8.pos = mul(mul(tempPos, view), projection);
 	v8.posWS = tempPos;
 	v8.uv = tempUV;
+
+	tempNormal = normalize(cross((v6.posWS.xyz - v5.posWS.xyz), (v7.posWS.xyz - v5.posWS.xyz)));
+	v5.normWS = -tempNormal;
+	v6.normWS = -tempNormal;
+	v7.normWS = -tempNormal;
+	v8.normWS = -tempNormal;
 
 	output.Append(v1);
 	output.Append(v2);

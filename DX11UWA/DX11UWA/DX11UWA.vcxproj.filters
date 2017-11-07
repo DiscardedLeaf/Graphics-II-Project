@@ -107,6 +107,9 @@
     <Image Include="Assets\peng.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\mScottTexture.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

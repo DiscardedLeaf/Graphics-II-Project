@@ -438,7 +438,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
-	//context->PSSetShaderResources(0, 1, p_ShaderResourceView.GetAddressOf()); replace with geoShaderResourceView whenever you actually create that
+	context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
 
 	context->DrawIndexed(geo_indexCount, 0, 0);
 
@@ -753,11 +753,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		ruby.Emissive = { 0.0f, 0.0f, 0.0f, 0.0f };
 		ruby.Specular = { .727811f, .626959f, .626959f, 1.0f };
 		ruby.SpecularPower = 76.8f;
-		ruby.useTexture = false;
+		ruby.useTexture = true;
 		geo_materialProperties.material = ruby;
 
 		XMStoreFloat4x4(&geo_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslation(0.0, -3.0f, 0.0f),XMMatrixScaling(10.0f, 0.0f, 10.0f))));
 		XMStoreFloat4x4(&geo_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&geo_constantBufferData.world))));
+
+		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/mScottTexture.dds", nullptr, &geo_ShaderResourceView));
 	});
 
 	// Once the objects are loaded, the objects are ready to be rendered.

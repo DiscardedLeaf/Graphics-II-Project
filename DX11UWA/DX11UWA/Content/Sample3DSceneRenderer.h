@@ -61,6 +61,7 @@ namespace DX11UWA
 		//Direct3D texture objects
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>				p_texture;				//texture object for pencasso
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	p_ShaderResourceView;	//shader resource view for the pencasso texture
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	geo_ShaderResourceView; //shader resource view for the geometry shader textures
 
 		//Direct3D sampler objects
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
