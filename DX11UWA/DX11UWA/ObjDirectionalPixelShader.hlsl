@@ -142,13 +142,13 @@ LightingResult computeLighting(float4 Point, float3 normal)
 		switch (Lights[i].LightType)
 		{
 		case DIRECTIONAL_LIGHT:
-			result = calculateDirectionalLight(Lights[i], viewVector, Point, normal);
+			result = calculateDirectionalLight(Lights[i], viewVector, Point, normalize(normal));
 			break;
 		case POINT_LIGHT:
-			result = calculatePointLight(Lights[i], viewVector, Point, normal);
+			result = calculatePointLight(Lights[i], viewVector, Point, normalize(normal));
 			break;
 		case SPOT_LIGHT:
-			result = calculateSpotLight(Lights[i], viewVector, Point, normal);
+			result = calculateSpotLight(Lights[i], viewVector, Point, normalize(normal));
 			break;
 		}
 		finalResult.diffuse += result.diffuse;
