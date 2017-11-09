@@ -513,6 +513,11 @@ void Sample3DSceneRenderer::Render(void)
 
 	//set the geometry shader to null so it doesnt screw the other draws up
 	context->GSSetShader(nullptr, nullptr, 0);
+
+
+
+	//------------------------------------------------------------------------------------------------------------------
+	
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
