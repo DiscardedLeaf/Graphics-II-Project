@@ -1,20 +1,9 @@
-
-Texture2D Texture : register(t0); //the terrain map
-sampler Sampler : register(s0); //to read the terrain map
-
-
-cbuffer PerObject : register(b0)
+cbuffer perObject : register(b0)
 {
 	matrix world;
 	matrix view;
 	matrix projection;
 	matrix inverseTransposeWorld;
-};
-
-cbuffer ShadowMap : register(b1)
-{
-	float width;
-	float height;
 }
 
 struct VS_Input
@@ -31,9 +20,21 @@ struct VS_Output
 	float4 pos : SV_POSITION;
 };
 
-
 VS_Output main(VS_Input input)
 {
 	VS_Output output;
+
+	float4 position = float4(input.pos, 1.0f);
+	float4 normal = float4(input.norm, 0.0f);
+
+	position = mul(position, world);
+	position = mul(position, view);
+	position = mul(position, projection);
+
+	output.pos = position;
+	output.posWS = mul(float4(input.pos, 1.0f), world);
+	output.normWS = mul(normal, world).xyz;
+	output.uv = input.uv.xy;
+
 	return output;
 }

@@ -137,7 +137,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	float aspectRatio = outputSize.Width / outputSize.Height;
 	float fovAngleY = 70.0f * XM_PI / 180.0f;
 	camNearPlane = .01f;
-	camFarPlane = 100.0f;
+	camFarPlane = 200.0f;
 
 	// This is a simple example of change that can be made when the app is in
 	// portrait or snapped view.
@@ -163,10 +163,12 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 
 
-	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
-	static const XMVECTORF32 eye = { 0.0f, 0.7f, -1.5f, 0.0f };
+
+	// Eye is at (0,0.7,10.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
+	static const XMVECTORF32 eye = { 0.0f, 2.7f, -30.5f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
@@ -175,6 +177,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&geo_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+	XMStoreFloat4x4(&tamriel_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 
 }
 
@@ -270,6 +273,8 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
 	}
 	if (m_kbuttons['J']) //increases the near plane
 	{
@@ -286,6 +291,9 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
+
 	}
 	if (m_kbuttons['M']) //lowers the far plane (it'll take a while before you notice it)
 	{
@@ -302,6 +310,8 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
 	}
 	if (m_kbuttons['K']) //increases the far plane
 	{
@@ -318,6 +328,8 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMStoreFloat4x4(&g_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 		XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+		XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
 	}
 
 	if (m_currMousePos) 
@@ -426,7 +438,7 @@ void Sample3DSceneRenderer::Render(void)
 
 	//lighting stuff
 	//rotate the directional light
-	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationX(-.01f)));
+	//XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationX(-.01f)));
 	//move the point light
 	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.05f)));
 	//move the spot light and change its direction
@@ -457,7 +469,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	
-	context->DrawIndexed(g_indexCount, 0, 0);
+	//context->DrawIndexed(g_indexCount, 0, 0);
 
 
 	//----------------------------------------------------------------------------------------------------------------------------------
@@ -483,7 +495,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, p_ShaderResourceView.GetAddressOf());
 	
-	context->DrawIndexed(pDeath_indexCount, 0, 0);
+	//context->DrawIndexed(pDeath_indexCount, 0, 0);
 
 	//geoShader objects
 
@@ -509,15 +521,35 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
 
-	context->DrawIndexed(geo_indexCount, 0, 0);
+	//context->DrawIndexed(geo_indexCount, 0, 0);
 
 	//set the geometry shader to null so it doesnt screw the other draws up
 	context->GSSetShader(nullptr, nullptr, 0);
 
-
-
 	//------------------------------------------------------------------------------------------------------------------
-	
+	//terrain
+	XMStoreFloat4x4(&tamriel_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	stride = sizeof(VertexPositionUVNormal);
+
+	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &tamriel_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &tamriel_materialProperties, 0, 0, 0);
+	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
+	context->UpdateSubresource1(h_constantBuffer.Get(), 0, NULL, &tamriel_textureData, 0, 0, 0);
+
+	context->IASetVertexBuffers(0, 1, tamriel_vertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(tamriel_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->IASetInputLayout(n_inputLayout.Get());
+
+	context->VSSetShader(t_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
+	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+
+	context->DrawIndexed(tamriel_indexCount, 0, 0);
+
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
@@ -528,6 +560,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto loadObjVSTask = DX::ReadDataAsync(L"ObjVertexShader.cso");
 	auto loadObjDirPSTask = DX::ReadDataAsync(L"ObjDirectionalPixelShader.cso");
 	auto loadGSTask = DX::ReadDataAsync(L"GeometryShader.cso");
+	auto loadTerrain_VSTask = DX::ReadDataAsync(L"Terrain_VS.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData)
@@ -600,6 +633,14 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	});
 
+	//create the terrain vertex shader then create a constant buffer associated with it
+	auto createTerrain_VSTask = loadTerrain_VSTask.then([this](const std::vector<byte>& fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateVertexShader(&fileData[0], fileData.size(), nullptr, &t_vertexShader));
+		CD3D11_BUFFER_DESC h_constantBufferDesc(sizeof(TextureData), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&h_constantBufferDesc, nullptr, &h_constantBuffer));
+	});
+
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateGeometryShader(&fileData[0], fileData.size(), nullptr, &n_geometryShader));
@@ -664,6 +705,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer));
 	});
 
+	//obsidian floor
 	auto createFloorTask = (createObjDirPSTask && createObjVSTask).then([this]()
 	{
 		static VertexPositionUVNormal gridVertices[] = 
@@ -713,6 +755,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		XMStoreFloat4x4(&g_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&g_constantBufferData.world))));
 	});
 
+	//dead penguin
 	auto createPencassoDeathTask = (createObjVSTask && createObjDirPSTask).then([this]()
 	{
 		//load vertex data
@@ -736,6 +779,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/peng.dds", nullptr, &p_ShaderResourceView));
 	});
 
+	//lights
 	auto createLights = (createObjDirPSTask).then([this]()
 	{
 		//initialize all lights to disabled
@@ -745,7 +789,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//directional light (the sun)
 		Light hereComesTheSun;
 		hereComesTheSun.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		hereComesTheSun.Direction = { 0.0f, 0.0f, -1.0f, 0.0f };
+		hereComesTheSun.Direction = { 0.0f, -1.0f, 0.0f, 0.0f };
 		hereComesTheSun.Enabled = 1;
 		hereComesTheSun.LightType = 0;
 
@@ -774,7 +818,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		m_lighting.Lights[2] = flashLight;
 		m_lighting.GlobalAmbient = { 0.25f, 0.25f, 0.25f, 0.25f };
 	});
-
+	
+	//floating squares
 	auto createGeoShaderStuff = createGeoShaderTask.then([this]()
 	{
 		static vector<VertexPositionUVNormal> geoPoints;
@@ -835,9 +880,94 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/mScottTexture.dds", nullptr, &geo_ShaderResourceView));
 	});
+	//terrain
+	auto createMountainTask = (createTerrain_VSTask && createObjDirPSTask).then([this]()
+	{
+		static vector<VertexPositionUVNormal> vertices;
+		static vector<unsigned short> indices;
+		int xCount = 0;
+		int zCount = 0;
+
+		for (float x = -1.f; x < 1.05f; x += .1f)
+		{
+			zCount = 0;
+			for (float z = -1.f; z < 1.05f; z += .1f)
+			{
+				VertexPositionUVNormal vertex;
+				vertex.pos.x = x;
+				vertex.pos.y = 0.0f;
+				vertex.pos.z = z;
+				vertex.normal = { 0.0f, 1.0f, 0.0f };
+				vertex.uv.x = (x + 1) * .5f;
+				vertex.uv.y = (1 - z) * .5f;
+				vertices.push_back(vertex);
+				++zCount;
+			}
+			++xCount;
+		}
+		for (int x = 0; x < xCount - 1; ++x)
+		{
+			for (int z = 0; z < zCount - 1; ++z)
+			{
+				indices.push_back(x * zCount + z);
+				indices.push_back(x * zCount + z + 1);
+				indices.push_back(x * zCount + z + zCount);
+				indices.push_back(x * zCount + z + zCount + 1);
+			}
+		}
+		tamriel_indexCount = indices.size();
+
+		D3D11_SUBRESOURCE_DATA vertexData;
+		ZeroMemory(&vertexData, sizeof(vertexData));
+		vertexData.pSysMem = &vertices[0];
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.ByteWidth = sizeof(vertices[0]) * vertices.size();
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = sizeof(vertices[0]);
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &tamriel_vertexBuffer));
+
+		D3D11_SUBRESOURCE_DATA indexData;
+		ZeroMemory(&indexData, sizeof(indexData));
+		indexData.pSysMem = &indices[0];
+
+		D3D11_BUFFER_DESC indexBufferDesc;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.ByteWidth = sizeof(indices[0]) * indices.size();
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = sizeof(indices[0]);
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &tamriel_indexBuffer));
+
+		_Material rock;
+		rock.Ambient = { 0.25f, 0.25f, 0.25f, 1.0f };
+		rock.Diffuse = { 0.4f, 0.3f, .05f, 1.0f };
+		rock.Emissive = { 0.0f, 0.0f, 0.0f, 1.0f };
+		rock.Specular = { .1f, .1f, .1f, 1.0f };
+		rock.SpecularPower = 8;
+		rock.useTexture = false;
+		tamriel_materialProperties.material = rock;
+
+		tamriel_textureData.texHeight = 819;
+		tamriel_textureData.texWidth = 1024;
+
+		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 0, 50)));
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/tamrielHeightMap.dds", nullptr, &tamriel_ShaderResourceView);
+
+	});
+
 
 	// Once the objects are loaded, the objects are ready to be rendered.
-	(createCubeTask && createFloorTask && createPencassoDeathTask && createLights && createGeoShaderStuff).then([this]()
+	(createCubeTask &&
+	 createFloorTask &&
+	 createPencassoDeathTask &&
+	 createLights &&
+	 createGeoShaderStuff &&
+	 createMountainTask).then([this]()
 	{
 		m_loadingComplete = true;
 	});
@@ -857,6 +987,7 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	n_constantBuffer.Reset();
 	t_constantBuffer.Reset();
 	l_constantBuffer.Reset();
+	h_constantBuffer.Reset();
 	m_vertexBuffer.Reset();
 	g_vertexBuffer.Reset();
 	pDeath_vertexBuffer.Reset();

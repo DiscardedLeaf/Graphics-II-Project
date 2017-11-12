@@ -161,7 +161,7 @@ void DX::DeviceResources::CreateDeviceResources()
 
 	HRESULT hr = D3D11CreateDevice(
 		nullptr,					// Specify nullptr to use the default adapter.
-		D3D_DRIVER_TYPE_HARDWARE,	// Create a device using the hardware graphics driver.
+		D3D_DRIVER_TYPE_WARP,	// Create a device using the hardware graphics driver.
 		0,							// Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
 		creationFlags,				// Set debug and Direct2D compatibility flags.
 		featureLevels,				// List of feature levels this app can support.

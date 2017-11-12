@@ -61,6 +61,13 @@ namespace DX11UWA
 		Light Lights[MAX_LIGHTS];  //a container with all lights in the scene
 	};
 
+	struct TextureData //the plane beneath the mountain
+	{
+		uint32 texWidth;
+		uint32 texHeight;
+		DirectX::XMFLOAT2 padding;
+	};
+
 	// Used to send per-vertex data to the vertex shader.
 	struct VertexPositionColor
 	{

@@ -44,6 +44,7 @@ namespace DX11UWA
 		//Direct3D vertex shaders
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			m_vertexShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			n_vertexShader;			 //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>			t_vertexShader;			 //vertex shader for terrain
 
 		//Direct3D pixel shaders
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
@@ -55,6 +56,7 @@ namespace DX11UWA
 		//Direct3D constant buffers
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_constantBuffer;		 //constant buffer for world objects
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				n_constantBuffer;	     //constant buffer for normalized world objects
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				h_constantBuffer;		 //constant buffer for terrain descriptions
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				t_constantBuffer;		 //constant buffer for texturing
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				l_constantBuffer;		 //constant buffer for lighting
 
@@ -62,6 +64,7 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>				p_texture;				//texture object for pencasso
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	p_ShaderResourceView;	//shader resource view for the pencasso texture
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	geo_ShaderResourceView; //shader resource view for the geometry shader textures
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tamriel_ShaderResourceView; //shader resource view for adjusting terrain vertices
 
 		//Direct3D sampler objects
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
@@ -92,6 +95,14 @@ namespace DX11UWA
 		PerObjectBuffer										geo_constantBufferData;
 		uint32												geo_indexCount;
 		MaterialProperties									geo_materialProperties;
+
+		//terrain resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				tamriel_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				tamriel_indexBuffer;
+		PerObjectBuffer										tamriel_constantBufferData;
+		TextureData											tamriel_textureData;
+		uint32												tamriel_indexCount;
+		MaterialProperties									tamriel_materialProperties;
 
 		//Light Objects
 		LightProperties										m_lighting;
