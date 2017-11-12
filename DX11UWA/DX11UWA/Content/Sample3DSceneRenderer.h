@@ -37,6 +37,10 @@ namespace DX11UWA
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
+		//Direct3D rasterizer states
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState>		m_rasterizerState;		//normal, filled rasterizer state
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState>		w_rasterizerState;		//wireframe, no culling rasterizer state
+
 		//Direct3D input layouts
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>			m_inputLayout;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>			n_inputLayout;			 //position, uv's and normals
@@ -121,6 +125,11 @@ namespace DX11UWA
 		DirectX::XMFLOAT4X4 m_camera;
 		float camNearPlane; //n and j to affect near plane
 		float camFarPlane;  //m and k to affect far plane
+
+		//variable that tells whether the scene is being rendered in wireframe or normally ('U' to change)
+		bool renderInWireframe;
+		//timer to prevent rapid swaps between wireframe and normal mode
+		float wireframeButtonDownTime = 0;
 	};
 }
 

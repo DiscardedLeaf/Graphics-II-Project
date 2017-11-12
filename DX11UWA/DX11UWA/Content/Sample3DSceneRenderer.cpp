@@ -331,6 +331,23 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 		XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 
 	}
+	if (m_kbuttons['U'] & 0x1) //toggles wireframe mode
+	{
+		if (wireframeButtonDownTime <= 0)
+		{
+			if (renderInWireframe)
+			{
+				m_deviceResources->GetD3DDeviceContext()->RSSetState(m_rasterizerState.Get());
+				renderInWireframe = !renderInWireframe;
+			}
+			else
+			{
+				m_deviceResources->GetD3DDeviceContext()->RSSetState(w_rasterizerState.Get());
+				renderInWireframe = !renderInWireframe;
+			}
+			wireframeButtonDownTime = .1f;
+		}
+	}
 
 	if (m_currMousePos) 
 	{
@@ -410,6 +427,13 @@ void Sample3DSceneRenderer::Render(void)
 	}
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
+	
+
+	//decrement all button timers by a little bit
+	wireframeButtonDownTime -= .01;
+
+
+
 
 	//XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 
@@ -633,12 +657,27 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	});
 
-	//create the terrain vertex shader then create a constant buffer associated with it
+	//create the terrain vertex shader and constant buffer then create 2 rasterizer states
 	auto createTerrain_VSTask = loadTerrain_VSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateVertexShader(&fileData[0], fileData.size(), nullptr, &t_vertexShader));
 		CD3D11_BUFFER_DESC h_constantBufferDesc(sizeof(TextureData), D3D11_BIND_CONSTANT_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&h_constantBufferDesc, nullptr, &h_constantBuffer));
+
+		D3D11_RASTERIZER_DESC fillRasterizerDesc;
+		ZeroMemory(&fillRasterizerDesc, sizeof(fillRasterizerDesc));
+		fillRasterizerDesc.CullMode = D3D11_CULL_BACK;
+		fillRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		m_deviceResources->GetD3DDevice()->CreateRasterizerState(&fillRasterizerDesc, &m_rasterizerState);
+
+		D3D11_RASTERIZER_DESC wireframeRasterizerDesc;
+		ZeroMemory(&wireframeRasterizerDesc, sizeof(wireframeRasterizerDesc));
+		wireframeRasterizerDesc.CullMode = D3D11_CULL_NONE;
+		wireframeRasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+		m_deviceResources->GetD3DDevice()->CreateRasterizerState(&wireframeRasterizerDesc, &w_rasterizerState);
+
+		renderInWireframe = false;
+
 	});
 
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
