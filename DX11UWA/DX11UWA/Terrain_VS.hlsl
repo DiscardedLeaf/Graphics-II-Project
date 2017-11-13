@@ -1,10 +1,3 @@
-cbuffer perObject : register(b0)
-{
-	matrix world;
-	matrix view;
-	matrix projection;
-	matrix inverseTransposeWorld;
-}
 
 struct VS_Input
 {

@@ -470,8 +470,10 @@ void Sample3DSceneRenderer::Render(void)
 	XMStoreFloat4(&m_lighting.Lights[2].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[2].Position), XMMatrixRotationY(-.03f)));
 	//store the camera's new position
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
+	XMFLOAT3 cameraDirection = { m_camera._31, m_camera._32, m_camera._33 };
 	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
 	XMStoreFloat4(&tamriel_cameraDetails.cameraPosition, XMLoadFloat4(&cameraPosition));
+	XMStoreFloat3(&tamriel_cameraDetails.cameraDirection, XMLoadFloat3(&cameraDirection));
 
 	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
@@ -570,6 +572,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->VSSetShader(t_vertexShader.Get(), nullptr, 0);
 	context->HSSetShader(t_hullShader.Get(), nullptr, 0);
 	context->HSSetConstantBuffers(0, 1, cp_constantBuffer.GetAddressOf());
+	context->HSSetConstantBuffers(1, 1, n_constantBuffer.GetAddressOf());
 	context->DSSetShader(t_domainShader.Get(), nullptr, 0);
 	context->DSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
@@ -1015,7 +1018,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		tamriel_textureData.texHeight = 819;
 		tamriel_textureData.texWidth = 1024;
 
-		
+		tamriel_cameraDetails.cameraAngleRadians = 70 * XM_PI / 180.0f;
+		tamriel_cameraDetails.maxViewDistance = 25.0f;
 
 		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 0, 50)));
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/tamrielHeightMap.dds", nullptr, &tamriel_ShaderResourceView);

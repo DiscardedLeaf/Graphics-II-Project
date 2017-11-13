@@ -71,7 +71,7 @@ float calculateSpotLightAttenuation(Light light, float3 lightVector)
 	float minCos = cos(light.SpotAngle);
 	float maxCos = (minCos + 1.0f) / 2.0f;
 	float cosAngle = dot(normalize(light.Direction.xyz), -lightVector);
-	return smoothstep(minCos, maxCos, cosAngle);
+	return smoothstep(minCos, maxCos, cosAngle); //returns 1 if full light, 0 if no light, and somewhere inbetween if some light
 }
 
 struct LightingResult
