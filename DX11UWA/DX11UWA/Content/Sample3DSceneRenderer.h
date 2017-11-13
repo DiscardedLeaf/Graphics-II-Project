@@ -69,6 +69,7 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				h_constantBuffer;		 //constant buffer for terrain descriptions
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				t_constantBuffer;		 //constant buffer for texturing
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				l_constantBuffer;		 //constant buffer for lighting
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				cp_constantBuffer;		 //constant buffer containing the camera's position for use inside the hull shader
 
 		//Direct3D texture objects
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>				p_texture;				//texture object for pencasso
@@ -113,6 +114,7 @@ namespace DX11UWA
 		TextureData											tamriel_textureData;
 		uint32												tamriel_indexCount;
 		MaterialProperties									tamriel_materialProperties;
+		CameraPosition										tamriel_cameraPosition;
 
 		//Light Objects
 		LightProperties										m_lighting;

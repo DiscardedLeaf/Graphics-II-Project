@@ -471,6 +471,7 @@ void Sample3DSceneRenderer::Render(void)
 	//store the camera's new position
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
 	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
+	XMStoreFloat4(&tamriel_cameraPosition.cameraPosition, XMLoadFloat4(&cameraPosition));
 
 	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
@@ -567,6 +568,7 @@ void Sample3DSceneRenderer::Render(void)
 
 	context->VSSetShader(t_vertexShader.Get(), nullptr, 0);
 	context->HSSetShader(t_hullShader.Get(), nullptr, 0);
+	context->HSSetConstantBuffers(0, 1, cp_constantBuffer.GetAddressOf());
 	context->DSSetShader(t_domainShader.Get(), nullptr, 0);
 	context->DSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
@@ -664,7 +666,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	});
 
-	//create the terrain vertex shader and constant buffer then create 2 rasterizer states
+	//create the 3 shaders necessary for the terrain and any variables that they need
 	auto createTerrain_VSTask = loadTerrain_VSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateVertexShader(&fileData[0], fileData.size(), nullptr, &t_vertexShader));
@@ -689,6 +691,9 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createTerrain_HSTask = loadTerrain_HSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateHullShader(&fileData[0], fileData.size(), nullptr, &t_hullShader));
+		CD3D11_BUFFER_DESC cp_constantBufferDesc(sizeof(CameraPosition), D3D11_BIND_CONSTANT_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&cp_constantBufferDesc, nullptr, &cp_constantBuffer));
+
 	});
 	auto createTerrain_DSTask = loadTerrain_DSTask.then([this](const std::vector<byte>& fileData)
 	{

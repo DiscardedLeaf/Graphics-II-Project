@@ -1,3 +1,10 @@
+
+cbuffer cameraPositionData : register(b0)
+{
+	float4 cameraPosition;
+}
+
+
 // Input control point
 struct VS_CONTROL_POINT_OUTPUT
 {
