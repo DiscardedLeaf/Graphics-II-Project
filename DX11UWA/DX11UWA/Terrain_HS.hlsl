@@ -1,3 +1,7 @@
+#define HEIGHT_FACTOR 1.0f
+
+Texture2D Texture : register(t0);
+sampler Sampler : register(s0);
 
 cbuffer cameraPositionData : register(b0)
 {
@@ -63,7 +67,7 @@ int tesselationFactor(VS_CONTROL_POINT_OUTPUT a, VS_CONTROL_POINT_OUTPUT b)
 		distance = .99f;
 
 	distance = 1.0f - distance;
-	return ((int)(distance * 32)) + 1;
+	return ((int)(distance * 48)) + 1;
 }
 
 
@@ -103,13 +107,6 @@ HS_CONSTANT_DATA_OUTPUT CalcHSPatchConstants(
 		output.InsideTessFactor[1] = 0;
 	}
 
-	//output.EdgeTessFactor[0] =
-	//	output.EdgeTessFactor[1] =
-	//	output.EdgeTessFactor[2] =
-	//	output.EdgeTessFactor[3] =
-	//	output.InsideTessFactor[0] =
-	//	output.InsideTessFactor[1] = 2;
-
 	return output;
 }
 
@@ -125,10 +122,31 @@ HS_CONTROL_POINT_OUTPUT main(
 {
 	HS_CONTROL_POINT_OUTPUT output;
 
-	// Insert code to compute Output here
-	output.pos= ip[i].pos;
-	output.uv = ip[i].uv;
+	//find the height of the vertex based on the heightMap
+	float2 tempUV = ip[i].uv.xy;
+	float4 heightColor = Texture.SampleLevel(Sampler, tempUV, 0);
+	output.pos = float3(ip[i].pos.x, (heightColor.x - .5f) * HEIGHT_FACTOR, ip[i].pos.z);
+
+	//change the uv value to so that it can be used for texturing (original uv's were for the height map)
+	switch (i)
+	{
+	case 0:
+		output.uv = float3(0.0f, 1.0f, 0.0f); //bottom left
+		break;
+	case 1:
+		output.uv = float3(0.0f, 0.0f, 0.0f); //top left
+		break;
+	case 2:
+		output.uv = float3(1.0f, 1.0f, 0.0f); //bottom right
+		break;
+	case 3:
+		output.uv = float3(1.0f, 0.0f, 0.0f); //top right
+		break;
+	}
+
+	//set the normal to the input value (will be changed inside the domain shader)
 	output.norm = ip[i].norm;
+
 
 	return output;
 }

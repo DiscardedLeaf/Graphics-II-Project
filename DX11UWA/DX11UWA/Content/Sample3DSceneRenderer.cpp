@@ -573,6 +573,8 @@ void Sample3DSceneRenderer::Render(void)
 	context->HSSetShader(t_hullShader.Get(), nullptr, 0);
 	context->HSSetConstantBuffers(0, 1, cp_constantBuffer.GetAddressOf());
 	context->HSSetConstantBuffers(1, 1, n_constantBuffer.GetAddressOf());
+	context->HSSetSamplers(0, 1, m_sampler.GetAddressOf());
+	context->HSSetShaderResources(0, 1, tamriel_ShaderResourceView.GetAddressOf());
 	context->DSSetShader(t_domainShader.Get(), nullptr, 0);
 	context->DSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
@@ -1021,7 +1023,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		tamriel_cameraDetails.cameraAngleRadians = 70 * XM_PI / 180.0f;
 		tamriel_cameraDetails.maxViewDistance = 25.0f;
 
-		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 0, 50)));
+		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 50, 50)));
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/tamrielHeightMap.dds", nullptr, &tamriel_ShaderResourceView);
 
 	});

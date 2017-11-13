@@ -1,4 +1,3 @@
-
 struct VS_Input
 {
 	float3 pos : POSITION;

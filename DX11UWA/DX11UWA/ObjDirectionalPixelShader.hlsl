@@ -177,7 +177,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float4 diffuse = Material.Diffuse * lit.diffuse;
 	float4 specular = Material.Specular * lit.specular;
 
-	float4 texColor = { 1, 0, 1, 1 };
+	float4 texColor = { 1, 1, 1, 1 };
 	if (Material.useTexture)
 	{
 		texColor = Texture.Sample(Sampler, input.uv);
