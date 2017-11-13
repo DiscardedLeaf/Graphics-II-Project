@@ -2,6 +2,9 @@
 cbuffer cameraPositionData : register(b0)
 {
 	float4 cameraPosition;
+	float cameraAngleRadians;
+	float maxViewDistance;
+	float2 padding;
 }
 
 

@@ -114,7 +114,7 @@ namespace DX11UWA
 		TextureData											tamriel_textureData;
 		uint32												tamriel_indexCount;
 		MaterialProperties									tamriel_materialProperties;
-		CameraPosition										tamriel_cameraPosition;
+		CameraDetails										tamriel_cameraDetails;
 
 		//Light Objects
 		LightProperties										m_lighting;

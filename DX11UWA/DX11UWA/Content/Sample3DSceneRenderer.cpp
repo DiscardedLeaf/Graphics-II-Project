@@ -471,7 +471,7 @@ void Sample3DSceneRenderer::Render(void)
 	//store the camera's new position
 	XMFLOAT4 cameraPosition = { m_camera._41, m_camera._42, m_camera._43, m_camera._44 };
 	XMStoreFloat4(&m_lighting.CameraPosition, XMLoadFloat4(&cameraPosition));
-	XMStoreFloat4(&tamriel_cameraPosition.cameraPosition, XMLoadFloat4(&cameraPosition));
+	XMStoreFloat4(&tamriel_cameraDetails.cameraPosition, XMLoadFloat4(&cameraPosition));
 
 	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
@@ -559,6 +559,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &tamriel_constantBufferData, 0, 0, 0);
 	context->UpdateSubresource1(t_constantBuffer.Get(), 0, NULL, &tamriel_materialProperties, 0, 0, 0);
 	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
+	context->UpdateSubresource1(cp_constantBuffer.Get(), 0, NULL, &tamriel_cameraDetails, 0, 0, 0);
 	context->UpdateSubresource1(h_constantBuffer.Get(), 0, NULL, &tamriel_textureData, 0, 0, 0);
 
 	context->IASetVertexBuffers(0, 1, tamriel_vertexBuffer.GetAddressOf(), &stride, &offset);
@@ -691,7 +692,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createTerrain_HSTask = loadTerrain_HSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateHullShader(&fileData[0], fileData.size(), nullptr, &t_hullShader));
-		CD3D11_BUFFER_DESC cp_constantBufferDesc(sizeof(CameraPosition), D3D11_BIND_CONSTANT_BUFFER);
+		CD3D11_BUFFER_DESC cp_constantBufferDesc(sizeof(CameraDetails), D3D11_BIND_CONSTANT_BUFFER);
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&cp_constantBufferDesc, nullptr, &cp_constantBuffer));
 
 	});
@@ -1013,6 +1014,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		tamriel_textureData.texHeight = 819;
 		tamriel_textureData.texWidth = 1024;
+
+		
 
 		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 0, 50)));
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/tamrielHeightMap.dds", nullptr, &tamriel_ShaderResourceView);

@@ -68,9 +68,12 @@ namespace DX11UWA
 		DirectX::XMFLOAT2 padding;
 	};
 
-	struct CameraPosition //struct that contains camera position for use in terrain hull shader
+	struct CameraDetails //struct that contains camera position for use in terrain hull shader
 	{
 		DirectX::XMFLOAT4 cameraPosition;
+		float cameraAngleRadians;
+		float maxViewDistance;
+		DirectX::XMFLOAT2 padding;
 	};
 
 	// Used to send per-vertex data to the vertex shader.
