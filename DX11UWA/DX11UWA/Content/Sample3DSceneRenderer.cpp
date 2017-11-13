@@ -462,7 +462,7 @@ void Sample3DSceneRenderer::Render(void)
 
 	//lighting stuff
 	//rotate the directional light
-	//XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationX(-.01f)));
+	XMStoreFloat4(&m_lighting.Lights[0].Direction, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[0].Direction), XMMatrixRotationX(-.01f)));
 	//move the point light
 	XMStoreFloat4(&m_lighting.Lights[1].Position, XMVector4Transform(XMLoadFloat4(&m_lighting.Lights[1].Position), XMMatrixRotationY(-.05f)));
 	//move the spot light and change its direction
@@ -581,6 +581,7 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+	context->PSSetShaderResources(0, 1, tTex_ShaderResourceView.GetAddressOf());
 
 	context->DrawIndexed(tamriel_indexCount, 0, 0);
 
@@ -861,11 +862,11 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		//point light
 		Light star;
 		star.Color = { 0.0f, 1.0f, 0.0f, 1.0f };
-		star.Position = { 5.0f, 0.0f, 0.0f, 1.0f };
+		star.Position = { 20.0f, 5.0f, 0.0f, 1.0f };
 		star.LightType = 1;
 		star.Enabled = 1;
 		star.useQuadraticAttenuation = 1;
-		star.Radius = 10;
+		star.Radius = 30;
 
 		//spot light
 		Light flashLight;
@@ -1014,17 +1015,18 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		rock.Emissive = { 0.0f, 0.0f, 0.0f, 1.0f };
 		rock.Specular = { .1f, .1f, .1f, 1.0f };
 		rock.SpecularPower = 8;
-		rock.useTexture = false;
+		rock.useTexture = true;
 		tamriel_materialProperties.material = rock;
 
 		tamriel_textureData.texHeight = 819;
 		tamriel_textureData.texWidth = 1024;
 
-		tamriel_cameraDetails.cameraAngleRadians = 70 * XM_PI / 180.0f;
+		tamriel_cameraDetails.cameraAngleRadians = 90 * XM_PI / 180.0f;
 		tamriel_cameraDetails.maxViewDistance = 25.0f;
 
 		XMStoreFloat4x4(&tamriel_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 50, 50)));
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/tamrielHeightMap.dds", nullptr, &tamriel_ShaderResourceView);
+		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/stoneTexture.dds", nullptr, &tTex_ShaderResourceView);
 
 	});
 
@@ -1066,6 +1068,7 @@ void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 	pDeath_vertexBuffer.Reset();
 	geo_vertexBuffer.Reset();
 	geo_ShaderResourceView.Reset();
+	tTex_ShaderResourceView.Reset();
 	p_ShaderResourceView.Reset();
 	m_indexBuffer.Reset();
 	g_indexBuffer.Reset();

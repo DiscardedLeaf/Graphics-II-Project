@@ -67,7 +67,7 @@ int tesselationFactor(VS_CONTROL_POINT_OUTPUT a, VS_CONTROL_POINT_OUTPUT b)
 		distance = .99f;
 
 	distance = 1.0f - distance;
-	return ((int)(distance * 48)) + 1;
+	return ((int)(distance * 32)) + 1;
 }
 
 

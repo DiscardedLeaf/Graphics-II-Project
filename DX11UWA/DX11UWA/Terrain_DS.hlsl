@@ -42,8 +42,8 @@ DS_OUTPUT main(
 
 	//find good normal data based on cross products of positions
 	float3 norm1 = normalize(cross(patch[1].pos - patch[0].pos, patch[2].pos - patch[0].pos));
-	float3 norm2 = normalize(cross(patch[0].pos - patch[1].pos, patch[3].pos - patch[1].pos));
-	float3 norm3 = normalize(cross(patch[3].pos - patch[2].pos, patch[0].pos - patch[2].pos));
+	float3 norm2 = normalize(cross(patch[3].pos - patch[1].pos, patch[0].pos - patch[1].pos));
+	float3 norm3 = normalize(cross(patch[0].pos - patch[2].pos, patch[3].pos - patch[2].pos));
 	float3 norm4 = normalize(cross(patch[2].pos - patch[3].pos, patch[1].pos - patch[3].pos));
 
 

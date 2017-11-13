@@ -76,6 +76,7 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	p_ShaderResourceView;	//shader resource view for the pencasso texture
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	geo_ShaderResourceView; //shader resource view for the geometry shader textures
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tamriel_ShaderResourceView; //shader resource view for adjusting terrain vertices
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tTex_ShaderResourceView;//shader resource view for tamriels actual texture
 
 		//Direct3D sampler objects
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
