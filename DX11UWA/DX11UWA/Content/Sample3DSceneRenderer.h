@@ -50,6 +50,12 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			n_vertexShader;			 //position, uv's and normals
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			t_vertexShader;			 //vertex shader for terrain
 
+		//Direct3D hull shaders
+		Microsoft::WRL::ComPtr<ID3D11HullShader>			t_hullShader;			 //hull shader for terrain
+		
+		//Direct3D domain shaders
+		Microsoft::WRL::ComPtr<ID3D11DomainShader>			t_domainShader;			 //domain shader for terrain
+
 		//Direct3D pixel shaders
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light

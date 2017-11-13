@@ -562,11 +562,13 @@ void Sample3DSceneRenderer::Render(void)
 
 	context->IASetVertexBuffers(0, 1, tamriel_vertexBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(tamriel_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
 	context->IASetInputLayout(n_inputLayout.Get());
 
 	context->VSSetShader(t_vertexShader.Get(), nullptr, 0);
-	context->VSSetConstantBuffers1(0, 1, n_constantBuffer.GetAddressOf(), nullptr, nullptr);
+	context->HSSetShader(t_hullShader.Get(), nullptr, 0);
+	context->DSSetShader(t_domainShader.Get(), nullptr, 0);
+	context->DSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
@@ -574,6 +576,9 @@ void Sample3DSceneRenderer::Render(void)
 
 	context->DrawIndexed(tamriel_indexCount, 0, 0);
 
+	//set hull and domain shader to null so it doesnt screw with other draws
+	context->HSSetShader(nullptr, nullptr, 0);
+	context->DSSetShader(nullptr, nullptr, 0);
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
@@ -585,6 +590,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto loadObjDirPSTask = DX::ReadDataAsync(L"ObjDirectionalPixelShader.cso");
 	auto loadGSTask = DX::ReadDataAsync(L"GeometryShader.cso");
 	auto loadTerrain_VSTask = DX::ReadDataAsync(L"Terrain_VS.cso");
+	auto loadTerrain_HSTask = DX::ReadDataAsync(L"Terrain_HS.cso");
+	auto loadTerrain_DSTask = DX::ReadDataAsync(L"Terrain_DS.cso");
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData)
@@ -678,6 +685,14 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		renderInWireframe = false;
 
+	});
+	auto createTerrain_HSTask = loadTerrain_HSTask.then([this](const std::vector<byte>& fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateHullShader(&fileData[0], fileData.size(), nullptr, &t_hullShader));
+	});
+	auto createTerrain_DSTask = loadTerrain_DSTask.then([this](const std::vector<byte>& fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateDomainShader(&fileData[0], fileData.size(), nullptr, &t_domainShader));
 	});
 
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
@@ -920,7 +935,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/mScottTexture.dds", nullptr, &geo_ShaderResourceView));
 	});
 	//terrain
-	auto createMountainTask = (createTerrain_VSTask && createObjDirPSTask).then([this]()
+	auto createMountainTask = (createTerrain_VSTask && createTerrain_HSTask && createTerrain_DSTask && createObjDirPSTask).then([this]()
 	{
 		static vector<VertexPositionUVNormal> vertices;
 		static vector<unsigned short> indices;
@@ -1015,8 +1030,13 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 void Sample3DSceneRenderer::ReleaseDeviceDependentResources(void)
 {
 	m_loadingComplete = false;
+	m_rasterizerState.Reset();
+	w_rasterizerState.Reset();
 	m_vertexShader.Reset();
 	n_vertexShader.Reset();
+	t_vertexShader.Reset();
+	t_hullShader.Reset();
+	t_domainShader.Reset();
 	n_geometryShader.Reset();
 	m_inputLayout.Reset();
 	n_inputLayout.Reset();
