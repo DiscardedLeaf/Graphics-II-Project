@@ -165,6 +165,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&cloud_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	XMStoreFloat4x4(&skybox_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 
 
 
@@ -181,6 +182,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&geo_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&tamriel_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&cloud_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+	XMStoreFloat4x4(&skybox_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+
 
 
 }
@@ -480,6 +483,29 @@ void Sample3DSceneRenderer::Render(void)
 	XMStoreFloat4(&tamriel_cameraDetails.cameraPosition, XMLoadFloat4(&cameraPosition));
 	XMStoreFloat3(&tamriel_cameraDetails.cameraDirection, XMLoadFloat3(&cameraDirection));
 
+
+	//skybox
+	XMStoreFloat4x4(&skybox_constantBufferData.model, XMMatrixTranspose(XMMatrixMultiply(XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(cameraPosition.x, cameraPosition.y, cameraPosition.z))));
+	XMStoreFloat4x4(&skybox_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+
+	context->UpdateSubresource1(m_constantBuffer.Get(), 0, NULL, &skybox_constantBufferData, 0, 0, 0);
+	stride = sizeof(VertexPositionColor);
+	context->IASetVertexBuffers(0, 1, skybox_vertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(skybox_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->IASetInputLayout(m_inputLayout.Get());
+
+	context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+
+	context->PSSetShader(skybox_pixelShader.Get(), nullptr, 0);
+	context->PSSetShaderResources(0, 1, skybox_ShaderResourceView.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+
+	context->DrawIndexed(skybox_indexCount, 0, 0);
+	context->ClearDepthStencilView(m_deviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1, 0);
+
+
 	//floor
 	XMStoreFloat4x4(&g_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
 	//Set constant buffer's world matrix to plane's world matrix
@@ -636,6 +662,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto loadCloud_VSTask = DX::ReadDataAsync(L"Cloud_VS.cso");
 	auto loadCloud_GSTask = DX::ReadDataAsync(L"Cloud_GS.cso");
 	auto loadCloud_PSTask = DX::ReadDataAsync(L"Cloud_PS.cso");
+	auto loadSkybox_PSTask = DX::ReadDataAsync(L"Skybox_PS.cso");
 
 
 	// After the vertex shader file is loaded, create the shader and input layout.
@@ -780,6 +807,12 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		m_deviceResources->GetD3DDeviceContext()->OMSetBlendState(c_blendState.Get(), 0, 0xffffffff);
 
+	});
+
+	//create skybox pixel shader
+	auto createSkybox_PSTask = loadSkybox_PSTask.then([this](const std::vector<byte>&fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreatePixelShader(&fileData[0], fileData.size(), nullptr, &skybox_pixelShader));
 	});
 
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
@@ -1163,6 +1196,60 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	});
 
+	//skybox
+	auto createSkyboxTask = createSkybox_PSTask.then([this]()
+	{
+		static const VertexPositionColor cubeVertices[] =
+		{
+			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(-1.0f, -1.0f,  1.0f) },
+			{ XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(-1.0f,  1.0f, -1.0f) },
+			{ XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(-1.0f,  1.0f,  1.0f) },
+			{ XMFLOAT3( 1.0f, -1.0f, -1.0f), XMFLOAT3( 1.0f, -1.0f, -1.0f) },
+			{ XMFLOAT3( 1.0f, -1.0f,  1.0f), XMFLOAT3( 1.0f, -1.0f,  1.0f) },
+			{ XMFLOAT3( 1.0f,  1.0f, -1.0f), XMFLOAT3( 1.0f,  1.0f, -1.0f) },
+			{ XMFLOAT3( 1.0f,  1.0f,  1.0f), XMFLOAT3( 1.0f,  1.0f,  1.0f) },
+		};
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+		vertexBufferData.pSysMem = cubeVertices;
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &skybox_vertexBuffer));
+
+		static const unsigned short cubeIndices[] =
+		{
+			2,1,0, // -x
+			2,3,1,
+
+			5,6,4, // +x
+			7,6,5,
+
+			1,5,0, // -y
+			5,4,0,
+
+			6,7,2, // +y
+			7,3,2,
+
+			4,6,0, // -z
+			6,2,0,
+
+			3,7,1, // +z
+			7,5,1,
+		};
+
+		skybox_indexCount = ARRAYSIZE(cubeIndices);
+
+		D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
+		indexBufferData.pSysMem = cubeIndices;
+		indexBufferData.SysMemPitch = 0;
+		indexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, &skybox_indexBuffer));
+
+		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/Skybox.dds", nullptr, &skybox_ShaderResourceView));
+	});
 	
 
 
@@ -1173,7 +1260,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	 createLights &&
 	 createGeoShaderStuff &&
 	 createMountainTask &&
-	 createCloudsTask).then([this]()
+	 createCloudsTask && 
+	 createSkyboxTask).then([this]()
 	{
 		m_loadingComplete = true;
 	});

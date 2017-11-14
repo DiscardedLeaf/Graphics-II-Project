@@ -119,6 +119,9 @@
     <Image Include="Assets\cloud.dds">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\Skybox.dds">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -162,6 +165,9 @@
       <Filter>Content\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Cloud_PS.hlsl">
+      <Filter>Content\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Skybox_PS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

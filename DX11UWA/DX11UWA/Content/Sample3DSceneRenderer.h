@@ -62,6 +62,7 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			c_pixelShader;			 //pixel shader for cloud objects (only textures)
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>			skybox_pixelShader;		 //pixel shader built for skybox
 
 		//Direct3D blend states
 		Microsoft::WRL::ComPtr<ID3D11BlendState>			c_blendState;			 //alpha blend for clouds
@@ -79,12 +80,12 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				cp_constantBuffer;		 //constant buffer containing the camera's position for use inside the hull shader
 
 		//Direct3D texture objects
-		Microsoft::WRL::ComPtr<ID3D11Texture2D>				p_texture;				//texture object for pencasso
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	p_ShaderResourceView;	//shader resource view for the pencasso texture
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	geo_ShaderResourceView; //shader resource view for the geometry shader textures
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tamriel_ShaderResourceView; //shader resource view for adjusting terrain vertices
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tTex_ShaderResourceView;//shader resource view for tamriels actual texture
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	c_ShaderResourceView;	//shader resource view for clouds
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	skybox_ShaderResourceView; //shader resource view for the skybox
 
 		//Direct3D sampler objects
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
@@ -130,6 +131,12 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				cloud_indexBuffer;
 		PerObjectBuffer										cloud_constantBufferData;
 		uint32												cloud_indexCount;
+
+		//skybox resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				skybox_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				skybox_indexBuffer;
+		ModelViewProjectionConstantBuffer					skybox_constantBufferData;
+		uint32												skybox_indexCount;
 
 		//Light Objects
 		LightProperties										m_lighting;
