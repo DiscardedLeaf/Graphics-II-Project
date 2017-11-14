@@ -30,9 +30,9 @@ void main(
 
 	//positions will be in view space
 	v1.pos = input[0].pos;
-	v2.pos = float4(input[0].pos.x, input[0].pos.y + 1, input[0].pos.z, input[0].pos.w);
-	v3.pos = float4(input[0].pos.x + 1, input[0].pos.y + 1, input[0].pos.z, input[0].pos.w);
-	v4.pos = float4(input[0].pos.x + 1, input[0].pos.y, input[0].pos.z, input[0].pos.w);
+	v2.pos = float4(input[0].pos.x, input[0].pos.y + 10, input[0].pos.z, input[0].pos.w);
+	v3.pos = float4(input[0].pos.x + 20, input[0].pos.y + 10, input[0].pos.z, input[0].pos.w);
+	v4.pos = float4(input[0].pos.x + 20, input[0].pos.y, input[0].pos.z, input[0].pos.w);
 
 
 	//put positions into projection space
@@ -47,9 +47,9 @@ void main(
 	v3.uv = float2(1.0f, 0.0f);
 	v4.uv = float2(1.0f, 1.0f);
 
-	output.Append(v1);
 	output.Append(v2);
 	output.Append(v3);
+	output.Append(v1);
 	output.Append(v4);
 
 	output.RestartStrip();

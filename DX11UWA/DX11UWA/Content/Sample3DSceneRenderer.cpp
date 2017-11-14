@@ -594,6 +594,29 @@ void Sample3DSceneRenderer::Render(void)
 	context->DSSetShader(nullptr, nullptr, 0);
 
 	//----------------------------------------------------------------------------------------------------------------------------------------------------
+	XMStoreFloat4x4(&cloud_constantBufferData.view, XMMatrixTranspose(XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_camera))));
+	stride = sizeof(VertexPosition);
+
+	context->UpdateSubresource1(n_constantBuffer.Get(), 0, NULL, &cloud_constantBufferData, 0, 0, 0);
+	context->UpdateSubresource1(l_constantBuffer.Get(), 0, NULL, &m_lighting, 0, 0, 0);
+
+	context->IASetVertexBuffers(0, 1, cloud_vertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(cloud_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->IASetInputLayout(c_inputLayout.Get());
+
+	context->VSSetShader(c_vertexShader.Get(), nullptr, 0);
+	context->VSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
+	context->GSSetShader(c_geometryShader.Get(), nullptr, 0);
+	context->GSSetConstantBuffers(0, 1, n_constantBuffer.GetAddressOf());
+	context->PSSetShader(c_pixelShader.Get(), nullptr, 0);
+	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
+	context->PSSetShaderResources(0, 1, c_ShaderResourceView.GetAddressOf());
+
+	context->DrawIndexed(cloud_indexCount, 0, 0);
+
+	// set geoshader to null after draw
+	context->GSSetShader(nullptr, nullptr, 0);
 
 
 }
@@ -1069,15 +1092,15 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		static vector<VertexPosition> points;
 		static vector<unsigned short> indices;
 
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 30; ++i)
 		{
 			VertexPosition point;
 			float x,y,z;
 			x = rand() % 1000;
 			x = (x / 500.0f) - 1.0f;
 
-			y = rand() % 200;
-			y = (y / 1000.0f) + .35f;
+			y = rand() % 500;
+			y = (y / 1000.0f) + .25f;
 
 			z = rand() % 1000;
 			z = (z / 500.0f) - 1.0f;
@@ -1114,7 +1137,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &cloud_indexBuffer));
 
 
-		XMStoreFloat4x4(&cloud_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 50, 50)));
+		XMStoreFloat4x4(&cloud_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(100, 25, 100)));
 		
 
 		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/cloud.dds", nullptr, &c_ShaderResourceView));
