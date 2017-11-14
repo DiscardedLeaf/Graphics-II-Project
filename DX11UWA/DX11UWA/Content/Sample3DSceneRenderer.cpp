@@ -164,6 +164,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&pDeath_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&geo_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
 	XMStoreFloat4x4(&tamriel_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+	XMStoreFloat4x4(&cloud_constantBufferData.projection, XMMatrixTranspose(perspectiveMatrix * orientationMatrix));
+
 
 
 
@@ -178,6 +180,8 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources(void)
 	XMStoreFloat4x4(&pDeath_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&geo_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
 	XMStoreFloat4x4(&tamriel_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+	XMStoreFloat4x4(&cloud_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtLH(eye, at, up)));
+
 
 }
 
@@ -588,6 +592,10 @@ void Sample3DSceneRenderer::Render(void)
 	//set hull and domain shader to null so it doesnt screw with other draws
 	context->HSSetShader(nullptr, nullptr, 0);
 	context->DSSetShader(nullptr, nullptr, 0);
+
+	//----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
