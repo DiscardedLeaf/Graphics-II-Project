@@ -601,6 +601,10 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto loadTerrain_VSTask = DX::ReadDataAsync(L"Terrain_VS.cso");
 	auto loadTerrain_HSTask = DX::ReadDataAsync(L"Terrain_HS.cso");
 	auto loadTerrain_DSTask = DX::ReadDataAsync(L"Terrain_DS.cso");
+	auto loadCloud_VSTask = DX::ReadDataAsync(L"Cloud_VS.cso");
+	auto loadCloud_GSTask = DX::ReadDataAsync(L"Cloud_GS.cso");
+	auto loadCloud_PSTask = DX::ReadDataAsync(L"Cloud_PS.cso");
+
 
 	// After the vertex shader file is loaded, create the shader and input layout.
 	auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData)
@@ -1029,6 +1033,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/stoneTexture.dds", nullptr, &tTex_ShaderResourceView);
 
 	});
+
+	
 
 
 	// Once the objects are loaded, the objects are ready to be rendered.

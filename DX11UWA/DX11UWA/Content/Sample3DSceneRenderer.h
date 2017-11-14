@@ -44,11 +44,13 @@ namespace DX11UWA
 		//Direct3D input layouts
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>			m_inputLayout;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11InputLayout>			n_inputLayout;			 //position, uv's and normals
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>			c_inputLayout;			 //position only (used for clouds)
 
 		//Direct3D vertex shaders
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			m_vertexShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			n_vertexShader;			 //position, uv's and normals
 		Microsoft::WRL::ComPtr<ID3D11VertexShader>			t_vertexShader;			 //vertex shader for terrain
+		Microsoft::WRL::ComPtr<ID3D11VertexShader>			c_vertexShader;			 //vertex shader for clouds
 
 		//Direct3D hull shaders
 		Microsoft::WRL::ComPtr<ID3D11HullShader>			t_hullShader;			 //hull shader for terrain
@@ -59,9 +61,11 @@ namespace DX11UWA
 		//Direct3D pixel shaders
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			m_pixelShader;			 //position and uv's
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light
+		Microsoft::WRL::ComPtr<ID3D11PixelShader>			c_pixelShader;			 //pixel shader for cloud objects (only textures)
 
 		//Direct3D geometry shaders
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader>		n_geometryShader;		 //create geometry that can be lit and textured
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader>		c_geometryShader;		 //cloud geometry shader
 
 		//Direct3D constant buffers
 		Microsoft::WRL::ComPtr<ID3D11Buffer>				m_constantBuffer;		 //constant buffer for world objects
@@ -77,6 +81,7 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	geo_ShaderResourceView; //shader resource view for the geometry shader textures
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tamriel_ShaderResourceView; //shader resource view for adjusting terrain vertices
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	tTex_ShaderResourceView;//shader resource view for tamriels actual texture
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	c_ShaderResourceView;	//shader resource view for clouds
 
 		//Direct3D sampler objects
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>			m_sampler;				//sampler object for texturing
