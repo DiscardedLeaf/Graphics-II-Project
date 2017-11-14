@@ -122,6 +122,12 @@ namespace DX11UWA
 		MaterialProperties									tamriel_materialProperties;
 		CameraDetails										tamriel_cameraDetails;
 
+		//cloud resources
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				cloud_vertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer>				cloud_indexBuffer;
+		PerObjectBuffer										cloud_constantBufferData;
+		uint32												cloud_indexCount;
+
 		//Light Objects
 		LightProperties										m_lighting;
 
