@@ -711,6 +711,27 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateDomainShader(&fileData[0], fileData.size(), nullptr, &t_domainShader));
 	});
 
+	//create the 3 shaders necessary for clouds and any variables that they need
+	auto createCloud_VSTask = loadCloud_VSTask.then([this](const std::vector<byte>&fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateVertexShader(&fileData[0], fileData.size(), nullptr, &c_vertexShader));
+
+		static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), &fileData[0], fileData.size(), &c_inputLayout));
+	});
+	auto createCloud_GSTask = loadCloud_GSTask.then([this](const std::vector<byte>&fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateGeometryShader(&fileData[0], fileData.size(), nullptr, &c_geometryShader));
+	});
+	auto createCloud_PSTask = loadCloud_PSTask.then([this](const std::vector<byte>&fileData)
+	{
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreatePixelShader(&fileData[0], fileData.size(), nullptr, &c_pixelShader));
+	});
+
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateGeometryShader(&fileData[0], fileData.size(), nullptr, &n_geometryShader));
@@ -1034,6 +1055,64 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 	});
 
+	//clouds
+	auto createCloudsTask = (createCloud_VSTask && createCloud_GSTask && createCloud_PSTask).then([this]()
+	{
+		static vector<VertexPosition> points;
+		static vector<unsigned short> indices;
+
+		for (int i = 0; i < 10; ++i)
+		{
+			VertexPosition point;
+			float x,y,z;
+			x = rand() % 1000;
+			x = (x / 500.0f) - 1.0f;
+
+			y = rand() % 200;
+			y = (y / 1000.0f) + .35f;
+
+			z = rand() % 1000;
+			z = (z / 500.0f) - 1.0f;
+			point.pos = XMFLOAT4(x, y, z, 1.0f);
+			points.push_back(point);
+			indices.push_back(i);
+		}
+		cloud_indexCount = indices.size();
+
+		D3D11_SUBRESOURCE_DATA vertexData;
+		ZeroMemory(&vertexData, sizeof(vertexData));
+		vertexData.pSysMem = &points[0];
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.ByteWidth = sizeof(points[0]) * points.size();
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = sizeof(points[0]);
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &cloud_vertexBuffer));
+
+		D3D11_SUBRESOURCE_DATA indexData;
+		ZeroMemory(&indexData, sizeof(indexData));
+		indexData.pSysMem = &indices[0];
+
+		D3D11_BUFFER_DESC indexBufferDesc;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.ByteWidth = sizeof(indices[0]) * indices.size();
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = sizeof(indices[0]);
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexData, &cloud_indexBuffer));
+
+
+		XMStoreFloat4x4(&cloud_constantBufferData.world, XMMatrixTranspose(XMMatrixScaling(50, 50, 50)));
+		
+
+		DX::ThrowIfFailed(CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), L"Assets/cloud.dds", nullptr, &c_ShaderResourceView));
+
+	});
+
 	
 
 
@@ -1043,7 +1122,8 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	 createPencassoDeathTask &&
 	 createLights &&
 	 createGeoShaderStuff &&
-	 createMountainTask).then([this]()
+	 createMountainTask &&
+	 createCloudsTask).then([this]()
 	{
 		m_loadingComplete = true;
 	});

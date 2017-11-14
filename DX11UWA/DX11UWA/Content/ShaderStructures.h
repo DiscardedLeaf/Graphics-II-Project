@@ -90,4 +90,9 @@ namespace DX11UWA
 		DirectX::XMFLOAT3 uv;
 		DirectX::XMFLOAT3 normal;
 	};
+
+	struct VertexPosition
+	{
+		DirectX::XMFLOAT4 pos;
+	};
 }
