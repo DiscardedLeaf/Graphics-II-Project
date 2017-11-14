@@ -63,6 +63,9 @@ namespace DX11UWA
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			nDir_pixelShader;		 //position, uv's and normals for directional light
 		Microsoft::WRL::ComPtr<ID3D11PixelShader>			c_pixelShader;			 //pixel shader for cloud objects (only textures)
 
+		//Direct3D blend states
+		Microsoft::WRL::ComPtr<ID3D11BlendState>			c_blendState;			 //alpha blend for clouds
+
 		//Direct3D geometry shaders
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader>		n_geometryShader;		 //create geometry that can be lit and textured
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader>		c_geometryShader;		 //cloud geometry shader

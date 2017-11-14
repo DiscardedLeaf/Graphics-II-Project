@@ -761,6 +761,24 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 	auto createCloud_PSTask = loadCloud_PSTask.then([this](const std::vector<byte>&fileData)
 	{
 		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreatePixelShader(&fileData[0], fileData.size(), nullptr, &c_pixelShader));
+
+
+		D3D11_BLEND_DESC alphaBlendDesc;
+		ZeroMemory(&alphaBlendDesc, sizeof(alphaBlendDesc));
+
+		alphaBlendDesc.RenderTarget[0].BlendEnable = true;
+		alphaBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		alphaBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		alphaBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		alphaBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		alphaBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		alphaBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		alphaBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBlendState(&alphaBlendDesc, &c_blendState));
+
+		m_deviceResources->GetD3DDeviceContext()->OMSetBlendState(c_blendState.Get(), 0, 0xffffffff);
+
 	});
 
 	auto createGeoShaderTask = loadGSTask.then([this](const std::vector<byte>& fileData)
@@ -1100,7 +1118,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 			x = (x / 500.0f) - 1.0f;
 
 			y = rand() % 500;
-			y = (y / 1000.0f) + .25f;
+			y = (y / 1000.0f) + .15f;
 
 			z = rand() % 1000;
 			z = (z / 500.0f) - 1.0f;
