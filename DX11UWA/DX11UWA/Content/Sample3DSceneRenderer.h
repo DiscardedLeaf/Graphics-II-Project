@@ -145,6 +145,10 @@ namespace DX11UWA
 		bool	m_loadingComplete;
 		float	m_degreesPerSecond;
 		bool	m_tracking;
+		bool	renderScene1 = false;
+		bool	renderScene2 = false;
+		bool	renderScene3 = true;
+		bool	allTexturesMichaelScott = false;
 
 		// Data members for keyboard and mouse input
 		char	m_kbuttons[256];
@@ -160,6 +164,10 @@ namespace DX11UWA
 		bool renderInWireframe;
 		//timer to prevent rapid swaps between wireframe and normal mode
 		float wireframeButtonDownTime = 0;
+		float scene1ButtonDownTime = 0;
+		float scene2ButtonDownTime = 0;
+		float scene3ButtonDownTime = 0;
+		float allTexturesMichaelScottDownTime = 0;
 	};
 }
 

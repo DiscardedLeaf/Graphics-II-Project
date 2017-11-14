@@ -10,7 +10,7 @@ struct PS_Input
 float4 main(PS_Input input) : SV_TARGET
 {
 	float4 color = Texture.Sample(Sampler, input.uv);
-	if (color.w < .05)
+	if (color.w < .1f)
 		discard;
 	return color;
 }

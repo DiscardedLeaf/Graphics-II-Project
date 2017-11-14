@@ -356,6 +356,38 @@ void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const
 			wireframeButtonDownTime = .1f;
 		}
 	}
+	if (m_kbuttons['1'] & 0x1)
+	{
+		if (scene1ButtonDownTime <= 0)
+		{
+			renderScene1 = !renderScene1;
+			scene1ButtonDownTime = .1f;
+		}
+	}
+	if (m_kbuttons['2'] & 0x1)
+	{
+		if (scene2ButtonDownTime <= 0)
+		{
+			renderScene2 = !renderScene2;
+			scene2ButtonDownTime = .1f;
+		}
+	}
+	if (m_kbuttons['3'] & 0x1)
+	{
+		if (scene3ButtonDownTime <= 0)
+		{
+			renderScene3 = !renderScene3;
+			scene3ButtonDownTime = .1f;
+		}
+	}
+	if (m_kbuttons['O'] & 0x1)
+	{
+		if (allTexturesMichaelScottDownTime <= 0)
+		{
+			allTexturesMichaelScott = !allTexturesMichaelScott;
+			allTexturesMichaelScottDownTime = .1f;
+		}
+	}
 
 	if (m_currMousePos) 
 	{
@@ -439,7 +471,10 @@ void Sample3DSceneRenderer::Render(void)
 
 	//decrement all button timers by a little bit
 	wireframeButtonDownTime -= .01;
-
+	scene1ButtonDownTime -= .01;
+	scene2ButtonDownTime -= .01;
+	scene3ButtonDownTime -= .01;
+	allTexturesMichaelScottDownTime -= .01;
 
 
 
@@ -502,8 +537,14 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetShaderResources(0, 1, skybox_ShaderResourceView.GetAddressOf());
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 
-	context->DrawIndexed(skybox_indexCount, 0, 0);
-	context->ClearDepthStencilView(m_deviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1, 0);
+	if (allTexturesMichaelScott)
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
+
+	if (renderScene3)
+	{
+		context->DrawIndexed(skybox_indexCount, 0, 0);
+		context->ClearDepthStencilView(m_deviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1, 0);
+	}
 
 
 	//floor
@@ -526,8 +567,12 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetShader(nDir_pixelShader.Get(), nullptr, 0);
 	context->PSSetConstantBuffers1(0, 1, t_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
+
+	if (allTexturesMichaelScott)
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
 	
-	//context->DrawIndexed(g_indexCount, 0, 0);
+	if(renderScene1)
+		context->DrawIndexed(g_indexCount, 0, 0);
 
 
 	//----------------------------------------------------------------------------------------------------------------------------------
@@ -552,8 +597,12 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetConstantBuffers1(1, 1, l_constantBuffer.GetAddressOf(), nullptr, nullptr);
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, p_ShaderResourceView.GetAddressOf());
+
+	if (allTexturesMichaelScott)
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
 	
-	//context->DrawIndexed(pDeath_indexCount, 0, 0);
+	if(renderScene1)
+		context->DrawIndexed(pDeath_indexCount, 0, 0);
 
 	//geoShader objects
 
@@ -579,7 +628,11 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
 
-	//context->DrawIndexed(geo_indexCount, 0, 0);
+	if (allTexturesMichaelScott)
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
+
+	if(renderScene2)
+		context->DrawIndexed(geo_indexCount, 0, 0);
 
 	//set the geometry shader to null so it doesnt screw the other draws up
 	context->GSSetShader(nullptr, nullptr, 0);
@@ -614,7 +667,14 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, tTex_ShaderResourceView.GetAddressOf());
 
-	context->DrawIndexed(tamriel_indexCount, 0, 0);
+	if (allTexturesMichaelScott)
+	{
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
+		context->HSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
+	}
+
+	if(renderScene3)
+		context->DrawIndexed(tamriel_indexCount, 0, 0);
 
 	//set hull and domain shader to null so it doesnt screw with other draws
 	context->HSSetShader(nullptr, nullptr, 0);
@@ -640,7 +700,11 @@ void Sample3DSceneRenderer::Render(void)
 	context->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 	context->PSSetShaderResources(0, 1, c_ShaderResourceView.GetAddressOf());
 
-	context->DrawIndexed(cloud_indexCount, 0, 0);
+	if (allTexturesMichaelScott)
+		context->PSSetShaderResources(0, 1, geo_ShaderResourceView.GetAddressOf());
+
+	if(renderScene3)
+		context->DrawIndexed(cloud_indexCount, 0, 0);
 
 	// set geoshader to null after draw
 	context->GSSetShader(nullptr, nullptr, 0);
@@ -793,19 +857,6 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		D3D11_BLEND_DESC alphaBlendDesc;
 		ZeroMemory(&alphaBlendDesc, sizeof(alphaBlendDesc));
-
-		alphaBlendDesc.RenderTarget[0].BlendEnable = true;
-		alphaBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		alphaBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		alphaBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		alphaBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		alphaBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		alphaBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		alphaBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-		DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateBlendState(&alphaBlendDesc, &c_blendState));
-
-		m_deviceResources->GetD3DDeviceContext()->OMSetBlendState(c_blendState.Get(), 0, 0xffffffff);
 
 	});
 
@@ -1119,7 +1170,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 
 		_Material rock;
 		rock.Ambient = { 0.25f, 0.25f, 0.25f, 1.0f };
-		rock.Diffuse = { 0.4f, 0.3f, .05f, 1.0f };
+		rock.Diffuse = { 0.3f, 0.2f, .05f, 1.0f };
 		rock.Emissive = { 0.0f, 0.0f, 0.0f, 1.0f };
 		rock.Specular = { .1f, .1f, .1f, 1.0f };
 		rock.SpecularPower = 8;
