@@ -211,6 +211,7 @@ void Sample3DSceneRenderer::Rotate(float radians)
 	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 	XMStoreFloat4x4(&pDeath_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixRotationY(radians), XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f), XMMatrixScaling(.25f, .25f, .25f)))));
 	XMStoreFloat4x4(&pDeath_constantBufferData.inverseTransposeWorld, XMMatrixInverse(nullptr, XMMatrixTranspose(XMLoadFloat4x4(&pDeath_constantBufferData.world))));
+	XMStoreFloat4x4(&cloud_constantBufferData.world, XMMatrixTranspose(XMMatrixMultiply(XMMatrixRotationY(radians), XMMatrixScaling(100, 25, 100))));
 }
 
 void Sample3DSceneRenderer::UpdateCamera(DX::StepTimer const& timer, float const moveSpd, float const rotSpd)
@@ -956,7 +957,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		m_lighting.Lights[0] = hereComesTheSun;
 		m_lighting.Lights[1] = star;
 		m_lighting.Lights[2] = flashLight;
-		m_lighting.GlobalAmbient = { 0.25f, 0.25f, 0.25f, 0.25f };
+		m_lighting.GlobalAmbient = { 0.35f, 0.35f, 0.35f, 0.35f };
 	});
 	
 	//floating squares
@@ -1110,7 +1111,7 @@ void Sample3DSceneRenderer::CreateDeviceDependentResources(void)
 		static vector<VertexPosition> points;
 		static vector<unsigned short> indices;
 
-		for (int i = 0; i < 30; ++i)
+		for (int i = 0; i < 50; ++i)
 		{
 			VertexPosition point;
 			float x,y,z;
