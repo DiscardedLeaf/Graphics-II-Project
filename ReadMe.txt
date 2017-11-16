@@ -8,3 +8,4 @@ u - toggle wireframe mode
 2 - toggle features from milestone 2
 3 - toggle features from milestone 3
 o - toggle office mode (harder to spot outside of milestone 3)
+RMB - while held,  move the mouse to rotate perspective
